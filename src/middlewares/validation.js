@@ -3,6 +3,7 @@ const { BadRequest } = require("../response/error");
 const prisma = require("../config/prismaClient");
 
 const uniqueEmail = async (email) => {
+  if (!email) return false;
   const foundUser = await prisma.user.findUnique({
     where: {
       email,

@@ -9,9 +9,10 @@ class AuthController {
     }).send(res);
   }
 
-  static login(req, res) {
+  static async login(req, res) {
     new OKResponse({
-      message: "LOGIN",
+      message: "Login successfully",
+      metadata: await AuthService.login(req.body),
     }).send(res);
   }
 }
