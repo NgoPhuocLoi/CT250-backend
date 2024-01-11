@@ -1,9 +1,11 @@
 const { OKResponse } = require("../response/success");
+const AuthService = require("../services/auth");
 
 class AuthController {
-  static register(req, res) {
+  static async register(req, res) {
     new OKResponse({
-      message: "REGISTER",
+      message: "Register successfully",
+      metadata: await AuthService.register(req.body),
     }).send(res);
   }
 
