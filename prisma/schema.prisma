@@ -26,3 +26,11 @@ model Role {
   role  String
   users User[]
 }
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  parentId Int?      @unique
+  parent   Category? @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
+  child    Category? @relation("categoryRelation")
+}

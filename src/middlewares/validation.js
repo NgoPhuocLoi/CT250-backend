@@ -13,6 +13,16 @@ const uniqueEmail = async (email) => {
   if (foundUser) throw new Error("This email has already been used!");
 };
 
+const existCategory = async (categoryId) => {
+  if (!categoryId) return true;
+  if (!Number.parseInt(categoryId)) throw new Error("Category not found");
+  const foundCategory = await prisma.category.findUnique({
+    where: { id: +categoryId },
+  });
+
+  if (!foundCategory) throw new Error("Category not found");
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -21,4 +31,4 @@ const validate = (req, res, next) => {
   next();
 };
 
-module.exports = { validate, uniqueEmail };
+module.exports = { validate, uniqueEmail, existCategory };
