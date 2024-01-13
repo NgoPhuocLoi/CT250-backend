@@ -15,6 +15,8 @@ class AuthController {
       metadata: await AuthService.login(req.body),
     }).send(res);
   }
+
+  static async updateRole(req, res) {}
 }
 
 module.exports = AuthController;

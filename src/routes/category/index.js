@@ -2,11 +2,18 @@ const { param, body } = require("express-validator");
 const CategoryController = require("../../controllers/category");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
 const { existCategory, validate } = require("../../middlewares/validation");
+const { authentication, permission } = require("../../middlewares/auth");
+const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 
 const router = require("express").Router();
 
+router.get("", asyncHandler(CategoryController.getAll));
+
+router.use(authentication);
+
 router.post(
   "",
+  permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
   body("parentId")
     .custom(existCategory)
@@ -15,10 +22,9 @@ router.post(
   asyncHandler(CategoryController.create)
 );
 
-router.get("", asyncHandler(CategoryController.getAll));
-
 router.put(
   "/:id",
+  permission([ADMIN, EMPLOYEE]),
   param("id").custom(existCategory),
   validate,
   asyncHandler(CategoryController.update)
@@ -26,6 +32,7 @@ router.put(
 
 router.delete(
   "/:id",
+  permission([ADMIN, EMPLOYEE]),
   param("id").custom(existCategory),
   validate,
   asyncHandler(CategoryController.delete)

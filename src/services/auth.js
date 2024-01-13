@@ -5,21 +5,20 @@ const { generatePairTokens } = require("../utils/generateToken");
 const { getRole } = require("../constant/roles");
 
 class AuthService {
-  static async register({ email, password, fullName }) {
+  static async register({ email, password }) {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await prisma.user.create({
+    const newAccount = await prisma.account.create({
       data: {
         email,
         password: hashedPassword,
-        fullName,
       },
     });
 
-    return newUser;
+    return newAccount;
   }
 
   static async login({ email, password }) {
-    const user = await prisma.user.findUnique({
+    const account = await prisma.account.findUnique({
       where: { email },
       include: {
         role: {
@@ -28,22 +27,22 @@ class AuthService {
       },
     });
 
-    if (!user) throw new BadRequest("Invalid credentials");
+    if (!account) throw new BadRequest("Invalid credentials");
 
-    const matchedPassword = await bcrypt.compare(password, user.password);
+    const matchedPassword = await bcrypt.compare(password, account.password);
 
     if (!matchedPassword) throw new BadRequest("Invalid credentials");
 
     const tokens = generatePairTokens({
-      userId: user.id,
-      role: getRole(user.roleId),
+      id: account.id,
+      role: getRole(account.roleId),
     });
 
     return {
-      user: {
-        ...user,
+      account: {
+        ...account,
         password: undefined,
-        role: user.role.role,
+        role: account.role.role,
         roleId: undefined,
       },
       tokens,

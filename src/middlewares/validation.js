@@ -4,13 +4,13 @@ const prisma = require("../config/prismaClient");
 
 const uniqueEmail = async (email) => {
   if (!email) return false;
-  const foundUser = await prisma.user.findUnique({
+  const foundAccount = await prisma.account.findUnique({
     where: {
       email,
     },
   });
 
-  if (foundUser) throw new Error("This email has already been used!");
+  if (foundAccount) throw new Error("This email has already been used!");
 };
 
 const existCategory = async (categoryId) => {

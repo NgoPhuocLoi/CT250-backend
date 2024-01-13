@@ -24,8 +24,15 @@ class UnAuthorized extends ErrorRepsonse {
   }
 }
 
+class Forbidden extends ErrorRepsonse {
+  constructor(message = "Forbidden", errors = [], statusCode = 403) {
+    super(message, errors, statusCode);
+  }
+}
+
 module.exports = {
   BadRequest,
   NotFound,
   UnAuthorized,
+  Forbidden,
 };
