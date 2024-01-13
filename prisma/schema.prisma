@@ -10,27 +10,53 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  email     String   @unique
-  password  String
-  fullName  String
-  active    Boolean  @default(true)
-  roleId    Int      @default(3)
-  role      Role     @relation(fields: [roleId], references: [id])
+model Account {
+  id          Int          @id @default(autoincrement()) @map("account_id")
+  email       String       @unique
+  password    String
+  active      Boolean      @default(true)
+  roleId      Int          @default(3) @map("role_id")
+  role        Role         @relation(fields: [roleId], references: [id])
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  information Information?
+
+  @@map("accounts")
+}
+
+model Information {
+  accountId Int      @id @map("account_id")
+  account   Account? @relation(fields: [accountId], references: [id])
+  fullName  String   @map("full_name")
+  phone     String
+  gender    Boolean
+  birthday  DateTime
+  city      String
+  district  String
+  ward      String
+  address   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("account_information")
 }
 
 model Role {
-  id    Int    @id @default(autoincrement())
-  role  String
-  users User[]
+  id       Int       @id @default(autoincrement()) @map("role_id")
+  role     String
+  accounts Account[]
+
+  @@map("roles")
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String
-  parentId Int?      @unique
-  parent   Category? @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
-  child    Category? @relation("categoryRelation")
+  id        Int       @id @default(autoincrement()) @map("category_id")
+  name      String
+  parentId  Int?      @unique @map("parent_id")
+  parent    Category? @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
+  child     Category? @relation("categoryRelation")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("categories")
 }
