@@ -1,0 +1,22 @@
+const { OKResponse, CreatedResponse } = require("../response/success");
+const AccountService = require("../services/account");
+
+class AccountController {
+  static async updateInformation(req, res) {}
+
+  static async getAll(req, res) {
+    new CreatedResponse({
+      message: "Get all users successfully",
+      metadata: await AccountService.getAll(),
+    }).send(res);
+  }
+
+  static async deleteAll(req, res) {
+    new CreatedResponse({
+      message: "Delete all users successfully",
+      metadata: await AccountService.deleteAll(req.body),
+    }).send(res);
+  }
+}
+
+module.exports = AccountController;

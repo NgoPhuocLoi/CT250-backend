@@ -11,35 +11,33 @@ datasource db {
 }
 
 model Account {
-  id          Int          @id @default(autoincrement()) @map("account_id")
-  email       String       @unique
-  password    String
-  active      Boolean      @default(true)
-  roleId      Int          @default(3) @map("role_id")
-  role        Role         @relation(fields: [roleId], references: [id])
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  information Information?
+  id        Int      @id @default(autoincrement()) @map("account_id")
+  fullName  String   @map("full_name")
+  email     String   @unique
+  password  String
+  active    Boolean  @default(true)
+  phone     String?
+  gender    Boolean?
+  birthday  DateTime? @db.Date
+  roleId    Int      @default(3) @map("role_id")
+  role      Role     @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("accounts")
 }
 
-model Information {
-  accountId Int      @id @map("account_id")
-  account   Account? @relation(fields: [accountId], references: [id])
-  fullName  String   @map("full_name")
-  phone     String
-  gender    Boolean
-  birthday  DateTime
-  city      String
-  district  String
-  ward      String
-  address   String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+// model Information {
 
-  @@map("account_information")
-}
+//   city      String
+//   district  String
+//   ward      String
+//   address   String
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   @@map("account_information")
+// }
 
 model Role {
   id       Int       @id @default(autoincrement()) @map("role_id")
