@@ -9,12 +9,13 @@ const router = require("express").Router();
 
 router.get("", asyncHandler(CategoryController.getAll));
 
-router.use(authentication);
+// router.use(authentication);
 
 router.post(
   "",
-  permission([ADMIN, EMPLOYEE]),
+  // permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
+  body("slug").notEmpty().withMessage("Slug is missing"),
   body("parentId")
     .custom(existCategory)
     .withMessage("Parent category not found"),

@@ -1,17 +1,27 @@
 const prisma = require("../config/prismaClient");
 
 class CategoryService {
-  static async create({ name, parentId }) {
+  static async create({ name, parentId, slug }) {
     return await prisma.category.create({
       data: {
         name,
         parentId,
+        slug,
       },
     });
   }
 
   static async getAll() {
-    return await prisma.category.findMany();
+    return await prisma.category.findMany({
+      where: { parentId: null },
+      include: {
+        child: {
+          include: {
+            child: true,
+          },
+        },
+      },
+    });
   }
 
   static async update(categoryId, updatedData) {
