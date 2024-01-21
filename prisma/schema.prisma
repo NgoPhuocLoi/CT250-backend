@@ -50,13 +50,14 @@ model Role {
 }
 
 model Category {
-  id        Int       @id @default(autoincrement()) @map("category_id")
+  id        Int        @id @default(autoincrement()) @map("category_id")
   name      String
-  parentId  Int?      @unique @map("parent_id")
-  parent    Category? @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
-  child     Category? @relation("categoryRelation")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  slug      String
+  parentId  Int?       @map("parent_id")
+  parent    Category?  @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
+  child     Category[] @relation("categoryRelation")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
 
   @@map("categories")
 }
