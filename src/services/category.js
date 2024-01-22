@@ -19,6 +19,11 @@ class CategoryService {
           include: {
             child: true,
           },
+          orderBy: {
+            child: {
+              _count: "desc",
+            },
+          },
         },
       },
     });
