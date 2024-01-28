@@ -14,12 +14,6 @@ class ColorController {
     }).send(res);
   }
 
-  static async getOne(req, res) {
-    new OKResponse({
-      metadata: await ColorService.getOne(+req.params.id),
-    }).send(res);
-  }
-
   static async update(req, res) {
     new OKResponse({
       metadata: await ColorService.update(+req.params.id, req.body),

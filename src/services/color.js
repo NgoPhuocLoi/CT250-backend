@@ -1,25 +1,14 @@
 const prisma = require("../config/prismaClient");
 
 class ColorService {
-  static async create({ name, color_thumbnail, color_image }) {
+  static async create(data) {
     return await prisma.color.create({
-      data: {
-        name, color_thumbnail, color_image
-      },
+      data,
     });
   }
 
   static async getAll() {
     return await prisma.color.findMany({});
-  }
-
-  static async getOne(colorId) {
-    const color = await prisma.color.findUnique({
-      where: {
-        id: colorId,
-      },
-    });
-    return color;
   }
 
   static async update(colorId, updatedData) {

@@ -37,6 +37,18 @@ class ProductController {
       metadata: await ProductService.delete(+req.params.id),
     }).send(res);
   }
+
+  static async addImage(req, res) {
+    new CreatedResponse({
+      metadata: await ProductService.addImage(+req.params.id, req.body.url),
+    }).send(res);
+  }
+
+  static async deleteImage(req, res) {
+    new CreatedResponse({
+      metadata: await ProductService.deleteImage(+req.params.imageId),
+    }).send(res);
+  }
 }
 
 module.exports = ProductController;

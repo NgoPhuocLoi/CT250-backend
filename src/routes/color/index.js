@@ -9,20 +9,13 @@ const router = require("express").Router();
 
 router.get("", asyncHandler(ColorController.getAll));
 
-router.get("/:id",
-  param("id").custom(existColor),
-  validate,
-  asyncHandler(ColorController.getOne)
-);
-
 // router.use(authentication);
 
 router.post(
   "",
   // permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
-  body("color_thumbnail").notEmpty().withMessage("Color thumbnail is missing"),
-  body("color_image").notEmpty().withMessage("Color image is missing"),
+  body("colorImage").notEmpty().withMessage("Color image is missing"),
   validate,
   asyncHandler(ColorController.create)
 );

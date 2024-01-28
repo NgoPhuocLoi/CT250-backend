@@ -10,27 +10,27 @@ const uniqueEmail = async (email) => {
     },
   });
 
-  if (foundAccount) throw new Error("This email has already been used!");
+  if (foundAccount) throw new BadRequest("This email has already been used!");
 };
 
 const existCategory = async (categoryId) => {
   if (!categoryId) return true;
-  if (!Number.parseInt(categoryId)) throw new Error("Category not found");
+  if (!Number.parseInt(categoryId)) throw new BadRequest("Category not found");
   const foundCategory = await prisma.category.findUnique({
     where: { id: +categoryId },
   });
 
-  if (!foundCategory) throw new Error("Category not found");
+  if (!foundCategory) throw new BadRequest("Category not found");
 };
 
 const existProduct = async (productId) => {
   if (!productId) return true;
-  if (!Number.parseInt(productId)) throw new Error("Product not found");
+  if (!Number.parseInt(productId)) throw new BadRequest("Product not found");
   const foundProduct = await prisma.product.findUnique({
     where: { id: +productId },
   });
 
-  if (!foundProduct) throw new Error("Product not found");
+  if (!foundProduct) throw new BadRequest("Product not found");
 };
 
 const existProductWithSlug = async (productSlug) => {
@@ -39,47 +39,48 @@ const existProductWithSlug = async (productSlug) => {
     where: { slug: productSlug },
   });
 
-  if (!foundProduct) throw new Error("Product not found");
+  if (!foundProduct) throw new BadRequest("Product not found");
 };
 
 const existProductImage = async (productImageId) => {
   if (!productImageId) return true;
-  if (!Number.parseInt(productImageId)) throw new Error("Product image not found");
+  if (!Number.parseInt(productImageId))
+    throw new BadRequest("Product image not found");
   const foundProductImage = await prisma.productImage.findUnique({
     where: { id: +productImageId },
   });
 
-  if (!foundProductImage) throw new Error("Product image not found");
+  if (!foundProductImage) throw new BadRequest("Product image not found");
 };
 
 const existColor = async (colorId) => {
   if (!colorId) return true;
-  if (!Number.parseInt(colorId)) throw new Error("Color not found");
+  if (!Number.parseInt(colorId)) throw new BadRequest("Color not found");
   const foundColor = await prisma.color.findUnique({
     where: { id: +colorId },
   });
 
-  if (!foundColor) throw new Error("Color not found");
+  if (!foundColor) throw new BadRequest("Color not found");
 };
 
 const existSize = async (sizeId) => {
   if (!sizeId) return true;
-  if (!Number.parseInt(sizeId)) throw new Error("Size not found");
+  if (!Number.parseInt(sizeId)) throw new BadRequest("Size not found");
   const foundSize = await prisma.size.findUnique({
     where: { id: +sizeId },
   });
 
-  if (!foundSize) throw new Error("Size not found");
+  if (!foundSize) throw new BadRequest("Size not found");
 };
 
 const existVariant = async (variantId) => {
   if (!variantId) return true;
-  if (!Number.parseInt(variantId)) throw new Error("Variant not found");
+  if (!Number.parseInt(variantId)) throw new BadRequest("Variant not found");
   const foundVariant = await prisma.variant.findUnique({
     where: { id: +variantId },
   });
 
-  if (!foundVariant) throw new Error("Variant not found");
+  if (!foundVariant) throw new BadRequest("Variant not found");
 };
 
 const validate = (req, res, next) => {
@@ -90,4 +91,14 @@ const validate = (req, res, next) => {
   next();
 };
 
-module.exports = { validate, uniqueEmail, existCategory, existProduct, existProductWithSlug, existProductImage, existColor, existSize, existVariant };
+module.exports = {
+  validate,
+  uniqueEmail,
+  existCategory,
+  existProduct,
+  existProductWithSlug,
+  existProductImage,
+  existColor,
+  existSize,
+  existVariant,
+};

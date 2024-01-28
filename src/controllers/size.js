@@ -14,12 +14,6 @@ class SizeController {
     }).send(res);
   }
 
-  static async getOne(req, res) {
-    new OKResponse({
-      metadata: await SizeService.getOne(+req.params.id),
-    }).send(res);
-  }
-
   static async update(req, res) {
     new OKResponse({
       metadata: await SizeService.update(+req.params.id, req.body),

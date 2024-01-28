@@ -1,31 +1,20 @@
+const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 
 class ProductService {
-  static async create({ name, price, description, overview, material, instruction, slug, categoryId }) {
+  static async create(data) {
     return await prisma.product.create({
       data: {
-        name, price, description, overview, material, instruction, slug, categoryId
+        ...data,
+        slug: slugify(data.name + "-" + new Date().getTime(), {
+          lower: true,
+        }),
       },
     });
   }
 
   static async getAll() {
-    return await prisma.product.findMany({
-      include: {
-        image: {
-          select: {
-            url: true,
-          }
-        },
-        variant: {
-          select: {
-            id: true,
-            color: true,
-            size: true,
-          },
-        }
-      },
-    });
+    return await prisma.product.findMany({});
   }
 
   static async getOne(productId) {
@@ -34,20 +23,9 @@ class ProductService {
         id: productId,
       },
       include: {
-        image: {
-          select: {
-            url: true,
-          }
-        },
-        variant: {
-          select: {
-            id: true,
-            color: true,
-            size: true,
-          },
-        }
+        image: true,
       },
-    })
+    });
     return product;
   }
 
@@ -60,7 +38,7 @@ class ProductService {
         image: {
           select: {
             url: true,
-          }
+          },
         },
         variant: {
           select: {
@@ -68,9 +46,9 @@ class ProductService {
             color: true,
             size: true,
           },
-        }
+        },
       },
-    })
+    });
     return product;
   }
 
@@ -85,6 +63,23 @@ class ProductService {
 
   static async delete(productId) {
     await prisma.product.delete({ where: { id: productId } });
+  }
+
+  static async addImage(productId, imageUrl) {
+    return await prisma.productImage.create({
+      data: {
+        productId,
+        url: imageUrl,
+      },
+    });
+  }
+
+  static async deleteImage(productImageId) {
+    await prisma.productImage.delete({
+      where: {
+        id: productImageId,
+      },
+    });
   }
 }
 

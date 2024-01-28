@@ -1,25 +1,14 @@
 const prisma = require("../config/prismaClient");
 
 class SizeService {
-  static async create({ name, description }) {
+  static async create(data) {
     return await prisma.size.create({
-      data: {
-        name, description
-      },
+      data,
     });
   }
 
   static async getAll() {
     return await prisma.size.findMany({});
-  }
-
-  static async getOne(sizeId) {
-    const size = await prisma.size.findUnique({
-      where: {
-        id: sizeId,
-      },
-    });
-    return size;
   }
 
   static async update(sizeId, updatedData) {

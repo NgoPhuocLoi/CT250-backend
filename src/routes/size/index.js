@@ -9,12 +9,6 @@ const router = require("express").Router();
 
 router.get("", asyncHandler(SizeController.getAll));
 
-router.get("/:id",
-  param("id").custom(existSize),
-  validate,
-  asyncHandler(SizeController.getOne)
-);
-
 // router.use(authentication);
 
 router.post(
@@ -28,7 +22,7 @@ router.post(
 
 router.put(
   "/:id",
-  permission([ADMIN, EMPLOYEE]),
+  // permission([ADMIN, EMPLOYEE]),
   param("id").custom(existSize),
   validate,
   asyncHandler(SizeController.update)
@@ -36,7 +30,7 @@ router.put(
 
 router.delete(
   "/:id",
-  permission([ADMIN, EMPLOYEE]),
+  // permission([ADMIN, EMPLOYEE]),
   param("id").custom(existSize),
   validate,
   asyncHandler(SizeController.delete)
