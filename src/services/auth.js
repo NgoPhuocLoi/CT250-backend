@@ -40,7 +40,6 @@ class AuthService {
       id: account.id,
       role: getRole(account.roleId),
     });
-
     return {
       account: {
         ...account,

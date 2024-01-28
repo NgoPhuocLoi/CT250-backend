@@ -11,18 +11,18 @@ datasource db {
 }
 
 model Account {
-  id        Int      @id @default(autoincrement()) @map("account_id")
-  fullName  String   @map("full_name")
-  email     String   @unique
+  id        Int       @id @default(autoincrement()) @map("account_id")
+  fullName  String    @map("full_name")
+  email     String    @unique
   password  String
-  active    Boolean  @default(true)
+  active    Boolean   @default(true)
   phone     String?
   gender    Boolean?
   birthday  DateTime? @db.Date
-  roleId    Int      @default(3) @map("role_id")
-  role      Role     @relation(fields: [roleId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  roleId    Int       @default(3) @map("role_id")
+  role      Role      @relation(fields: [roleId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@map("accounts")
 }
@@ -56,6 +56,70 @@ model Category {
   child     Category[] @relation("categoryRelation")
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
+  product   Product[]
 
   @@map("categories")
+}
+
+model Color {
+  id              Int       @id @default(autoincrement()) @map("color_id")
+  name            String
+  color_thumbnail String
+  color_image     String
+  variant         Variant[]
+
+  @@map("colors")
+}
+
+model Size {
+  id          Int       @id @default(autoincrement()) @map("size_id")
+  name        String
+  description String
+  variant     Variant[]
+
+  @@map("sizes")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement()) @map("image_id")
+  url       String
+  productId Int     @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("product_images")
+}
+
+model Product {
+  id          Int            @id @default(autoincrement()) @map("product_id")
+  name        String
+  price       Float
+  visible     Boolean        @default(true)
+  description String
+  overview    String
+  material    String
+  instruction String
+  slug        String         @unique
+  categoryId  Int?           @map("category_id")
+  category    Category?      @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  variant     Variant[]
+  image       ProductImage[]
+
+  @@map("products")
+}
+
+model Variant {
+  id        Int      @id @default(autoincrement()) @map("variant_id")
+  quantity  Int
+  colorId   Int      @map("color_id")
+  color     Color    @relation(fields: [colorId], references: [id])
+  sizeId    Int      @map("size_id")
+  size      Size     @relation(fields: [sizeId], references: [id])
+  productId Int      @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("variants")
 }

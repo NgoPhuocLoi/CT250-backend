@@ -7,6 +7,15 @@ class AccountService {
         return accounts;
     }
 
+    static async getOne(accountId) {
+        const account = await prisma.account.findUnique({
+            where: {
+                id: accountId,
+            },
+        })
+        return account;
+    }
+
     static async deleteAll() {
         const deletedAccount = await prisma.account.deleteMany();
         return deletedAccount;

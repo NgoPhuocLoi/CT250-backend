@@ -11,6 +11,13 @@ class AccountController {
     }).send(res);
   }
 
+  static async getOne(req, res) {
+    new CreatedResponse({
+      message: "Get user successfully",
+      metadata: await AccountService.getOne(+req.params.id),
+    }).send(res);
+  }
+
   static async deleteAll(req, res) {
     new CreatedResponse({
       message: "Delete all users successfully",
