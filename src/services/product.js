@@ -12,8 +12,18 @@ class ProductService {
   static async getAll() {
     return await prisma.product.findMany({
       include: {
-        image: true,
-        variant: true,
+        image: {
+          select: {
+            url: true,
+          }
+        },
+        variant: {
+          select: {
+            id: true,
+            color: true,
+            size: true,
+          },
+        }
       },
     });
   }
@@ -24,9 +34,14 @@ class ProductService {
         id: productId,
       },
       include: {
-        image: true,
+        image: {
+          select: {
+            url: true,
+          }
+        },
         variant: {
-          include: {
+          select: {
+            id: true,
             color: true,
             size: true,
           },
@@ -42,9 +57,14 @@ class ProductService {
         slug: productSlug,
       },
       include: {
-        image: true,
+        image: {
+          select: {
+            url: true,
+          }
+        },
         variant: {
-          include: {
+          select: {
+            id: true,
             color: true,
             size: true,
           },
