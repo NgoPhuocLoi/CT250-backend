@@ -73,11 +73,16 @@ const existSize = async (sizeId) => {
   if (!foundSize) throw new BadRequest("Size not found");
 };
 
-const existVariant = async (variantId) => {
-  if (!variantId) return true;
-  if (!Number.parseInt(variantId)) throw new BadRequest("Variant not found");
+const existVariant = async (productId, { req }) => {
+  if (!req.body.sizeId || !req.body.colorId) return true;
   const foundVariant = await prisma.variant.findUnique({
-    where: { id: +variantId },
+    where: {
+      productId_colorId_sizeId: {
+        productId: +productId,
+        colorId: +req.body.colorId,
+        sizeId: +req.body.sizeId,
+      },
+    },
   });
 
   if (!foundVariant) throw new BadRequest("Variant not found");

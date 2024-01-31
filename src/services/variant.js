@@ -1,49 +1,44 @@
 const prisma = require("../config/prismaClient");
 
 class VariantService {
-  static async create({ quantity, colorId, sizeId, productId }) {
+  static async create(productId, { colorId, sizeId, thumbnail, quantity }) {
     return await prisma.variant.create({
       data: {
-        quantity, colorId, sizeId, productId
+        productId,
+        colorId,
+        sizeId,
+        thumbnail,
+        quantity,
       },
     });
   }
 
-  static async getAll() {
-    return await prisma.variant.findMany({
-      include: {
-        color: true,
-        size: true,
-        product: true,
-      },
-    });
-  }
-
-  static async getOne(variantId) {
-    const variant = await prisma.variant.findUnique({
-      where: {
-        id: variantId,
-      },
-      include: {
-        color: true,
-        size: true,
-        product: true,
-      },
-    });
-    return variant;
-  }
-
-  static async update(variantId, updatedData) {
+  static async update(productId, { colorId, sizeId, quantity, thumbnail }) {
     return await prisma.variant.update({
       where: {
-        id: variantId,
+        productId_colorId_sizeId: {
+          productId,
+          colorId,
+          sizeId,
+        },
       },
-      data: updatedData,
+      data: {
+        quantity,
+        thumbnail,
+      },
     });
   }
 
-  static async delete(variantId) {
-    await prisma.variant.delete({ where: { id: variantId } });
+  static async delete(productId, { colorId, sizeId }) {
+    await prisma.variant.delete({
+      where: {
+        productId_colorId_sizeId: {
+          productId,
+          colorId: +colorId,
+          sizeId: +sizeId,
+        },
+      },
+    });
   }
 }
 

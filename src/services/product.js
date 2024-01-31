@@ -14,18 +14,57 @@ class ProductService {
   }
 
   static async getAll() {
-    return await prisma.product.findMany({});
+    const products = await prisma.product.findMany({
+      include: {
+        variants: {
+          distinct: "colorId",
+          select: {
+            color: true,
+          },
+        },
+      },
+    });
+    return products.map((product) => ({
+      ...product,
+      colors: product.variants.map((v) => v.color),
+      variants: undefined,
+    }));
   }
 
   static async getOne(productId) {
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-      include: {
-        image: true,
-      },
-    });
+    const [product, productColors, productSizes] = await Promise.all([
+      prisma.product.findUnique({
+        where: {
+          id: productId,
+        },
+        include: {
+          images: true,
+          variants: true,
+        },
+      }),
+      prisma.variant.findMany({
+        distinct: ["colorId"],
+        where: {
+          productId,
+        },
+        select: {
+          color: true,
+        },
+      }),
+      prisma.variant.findMany({
+        distinct: ["sizeId"],
+        where: {
+          productId,
+        },
+        select: {
+          size: true,
+        },
+      }),
+    ]);
+
+    product.sizes = productSizes.map((item) => item.size);
+    product.colors = productColors.map((item) => item.color);
+
     return product;
   }
 

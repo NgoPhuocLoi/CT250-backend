@@ -1,19 +1,17 @@
 const { param, body } = require("express-validator");
 const VariantController = require("../../controllers/variant");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
-const { existVariant, validate } = require("../../middlewares/validation");
+const {
+  existVariant,
+  validate,
+  existColor,
+  existSize,
+  existProduct,
+} = require("../../middlewares/validation");
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 
-const router = require("express").Router();
-
-router.get("", asyncHandler(VariantController.getAll));
-
-router.get("/:id",
-  param("id").custom(existVariant),
-  validate,
-  asyncHandler(VariantController.getOne)
-);
+const router = require("express").Router({ mergeParams: true });
 
 // router.use(authentication);
 
@@ -21,25 +19,39 @@ router.post(
   "",
   // permission([ADMIN, EMPLOYEE]),
   body("quantity").isNumeric().withMessage("Quantity is not a number"),
-  body("colorId").notEmpty().withMessage("Color id is missing"),
-  body("sizeId").notEmpty().withMessage("Size id is missing"),
-  body("productId").notEmpty().withMessage("Product id is missing"),
+  body("colorId")
+    .notEmpty()
+    .withMessage("Color id is missing")
+    .custom(existColor),
+  body("sizeId").notEmpty().withMessage("Size id is missing").custom(existSize),
+  param("productId").custom(existProduct),
+  body("thumbnail").notEmpty().withMessage("Variant's thumbnail is missing"),
   validate,
   asyncHandler(VariantController.create)
 );
 
 router.put(
-  "/:id",
-  permission([ADMIN, EMPLOYEE]),
-  param("id").custom(existVariant),
+  "/",
+  // permission([ADMIN, EMPLOYEE]),
+  body("sizeId").notEmpty().withMessage("Size id is missing").custom(existSize),
+  body("colorId")
+    .notEmpty()
+    .withMessage("Color id is missing")
+    .custom(existColor),
+  param("productId").custom(existProduct).custom(existVariant),
   validate,
   asyncHandler(VariantController.update)
 );
 
 router.delete(
-  "/:id",
-  permission([ADMIN, EMPLOYEE]),
-  param("id").custom(existVariant),
+  "/",
+  // permission([ADMIN, EMPLOYEE]),
+  body("sizeId").notEmpty().withMessage("Size id is missing").custom(existSize),
+  body("colorId")
+    .notEmpty()
+    .withMessage("Color id is missing")
+    .custom(existColor),
+  param("productId").custom(existProduct).custom(existVariant),
   validate,
   asyncHandler(VariantController.delete)
 );
