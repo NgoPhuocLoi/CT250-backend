@@ -9,5 +9,6 @@ router.use("/products/:productId/variants", require("./variant"));
 router.use("/products", require("./product"));
 router.use("/colors", require("./color"));
 router.use("/sizes", require("./size"));
+router.use("/upload", require("./upload"));
 
 module.exports = router;

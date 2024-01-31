@@ -40,13 +40,17 @@ class ProductController {
 
   static async addImage(req, res) {
     new CreatedResponse({
-      metadata: await ProductService.addImage(+req.params.id, req.body.url),
+      metadata: await ProductService.addImage(+req.params.id, req.body),
     }).send(res);
   }
 
   static async deleteImage(req, res) {
     new CreatedResponse({
-      metadata: await ProductService.deleteImage(+req.params.imageId),
+      metadata: await ProductService.deleteImage(
+        +req.params.imageId,
+        req.filename
+      ),
+      // metadata: {},
     }).send(res);
   }
 }

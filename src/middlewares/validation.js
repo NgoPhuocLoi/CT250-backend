@@ -42,15 +42,15 @@ const existProductWithSlug = async (productSlug) => {
   if (!foundProduct) throw new BadRequest("Product not found");
 };
 
-const existProductImage = async (productImageId) => {
+const existProductImage = async (productImageId, { req }) => {
   if (!productImageId) return true;
   if (!Number.parseInt(productImageId))
     throw new BadRequest("Product image not found");
   const foundProductImage = await prisma.productImage.findUnique({
     where: { id: +productImageId },
   });
-
   if (!foundProductImage) throw new BadRequest("Product image not found");
+  req.filename = foundProductImage.filename;
 };
 
 const existColor = async (colorId) => {

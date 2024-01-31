@@ -10,6 +10,7 @@ const {
 } = require("../../middlewares/validation");
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
+const cloudUploader = require("../../middlewares/cloudUploader");
 
 const router = require("express").Router();
 
@@ -41,6 +42,21 @@ router.post(
   body("overview").notEmpty().withMessage("Overview is missing"),
   body("instruction").notEmpty().withMessage("Instruction is missing"),
   body("categoryId").custom(existCategory),
+  body("images")
+    .notEmpty()
+    .withMessage("Product's images are missing")
+    .isArray()
+    .withMessage("Product's images should be an array"),
+  body("images.*.path")
+    .notEmpty()
+    .withMessage("Image's path is missing")
+    .isString()
+    .withMessage("Image's path should be a string"),
+  body("images.*.filename")
+    .notEmpty()
+    .withMessage("Image's filename is missing")
+    .isString()
+    .withMessage("Image's filename should be a string"),
   validate,
   asyncHandler(ProductController.create)
 );
@@ -64,7 +80,6 @@ router.delete(
 router.post(
   "/:id/add-image",
   param("id").custom(existProduct),
-  body("url").notEmpty().withMessage("Image's url is missing"),
   validate,
   asyncHandler(ProductController.addImage)
 );

@@ -69,7 +69,8 @@ model Size {
 
 model ProductImage {
   id        Int     @id @default(autoincrement()) @map("image_id")
-  url       String
+  path      String
+  filename  String
   productId Int     @map("product_id")
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -97,11 +98,12 @@ model Product {
 }
 
 model Variant {
-  quantity  Int
-  thumbnail String
-  colorId   Int    @map("color_id")
-  sizeId    Int    @map("size_id")
-  productId Int    @map("product_id")
+  quantity          Int
+  thumbnailPath     String @map("thumbnail_path")
+  thumbnailFilename String @map("thumbnail_filename")
+  colorId           Int    @map("color_id")
+  sizeId            Int    @map("size_id")
+  productId         Int    @map("product_id")
 
   color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id], onDelete: Cascade)

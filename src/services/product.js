@@ -1,9 +1,10 @@
 const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
+const UploadService = require("./upload");
 
 class ProductService {
-  static async create(data) {
-    return await prisma.product.create({
+  static async create({ images, ...data }) {
+    const newProduct = await prisma.product.create({
       data: {
         ...data,
         slug: slugify(data.name + "-" + new Date().getTime(), {
@@ -11,6 +12,12 @@ class ProductService {
         }),
       },
     });
+
+    await prisma.productImage.createMany({
+      data: images.map((image) => ({ ...image, productId: newProduct.id })),
+    });
+
+    return newProduct;
   }
 
   static async getAll() {
@@ -101,24 +108,39 @@ class ProductService {
   }
 
   static async delete(productId) {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        images: true,
+      },
+    });
+
+    await Promise.all(
+      product.images.map((image) => UploadService.destroyImage(image.filename))
+    );
+
     await prisma.product.delete({ where: { id: productId } });
   }
 
-  static async addImage(productId, imageUrl) {
+  static async addImage(productId, { path, filename }) {
     return await prisma.productImage.create({
       data: {
         productId,
-        url: imageUrl,
+        path,
+        filename,
       },
     });
   }
 
-  static async deleteImage(productImageId) {
-    await prisma.productImage.delete({
-      where: {
-        id: productImageId,
-      },
-    });
+  static async deleteImage(productImageId, filename) {
+    await Promise.all([
+      prisma.productImage.delete({
+        where: {
+          id: productImageId,
+        },
+      }),
+      UploadService.destroyImage(filename),
+    ]);
   }
 }
 
