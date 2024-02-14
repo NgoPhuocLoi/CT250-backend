@@ -10,7 +10,11 @@ class ProductController {
 
   static async getAll(req, res) {
     new OKResponse({
-      metadata: await ProductService.getAll(),
+      metadata: await ProductService.getAll({
+        type: req.query.type,
+        categoryIds: req.query.categoryIds,
+        limit: +req.query.limit,
+      }),
     }).send(res);
   }
 

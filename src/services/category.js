@@ -15,12 +15,12 @@ class CategoryService {
     return await prisma.category.findMany({
       where: { parentId: null },
       include: {
-        child: {
+        children: {
           include: {
-            child: true,
+            children: true,
           },
           orderBy: {
-            child: {
+            children: {
               _count: "desc",
             },
           },

@@ -1,4 +1,4 @@
-const { param, body } = require("express-validator");
+const { param, body, query } = require("express-validator");
 const ProductController = require("../../controllers/product");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
 const {
@@ -11,10 +11,24 @@ const {
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 const cloudUploader = require("../../middlewares/cloudUploader");
+const { PRODUCT_QUERY_TYPES } = require("../../constant/productType");
 
 const router = require("express").Router();
 
-router.get("", asyncHandler(ProductController.getAll));
+router.get(
+  "",
+  query("type")
+    .notEmpty()
+    .withMessage("Product query type is missing!")
+    .isIn(PRODUCT_QUERY_TYPES)
+    .withMessage("Unknown product query type"),
+  query("limit").isNumeric().withMessage("Limit should be a number"),
+  query("categoryIds.*")
+    .isNumeric()
+    .withMessage("CategoryIds should be an integer array"),
+  validate,
+  asyncHandler(ProductController.getAll)
+);
 
 router.get(
   "/:id",
@@ -80,6 +94,8 @@ router.delete(
 router.post(
   "/:id/add-image",
   param("id").custom(existProduct),
+  body("path").notEmpty().withMessage("Image's path is missing"),
+  body("filename").notEmpty().withMessage("Image's filename is missing"),
   validate,
   asyncHandler(ProductController.addImage)
 );

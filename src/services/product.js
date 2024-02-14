@@ -1,6 +1,7 @@
 const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 const UploadService = require("./upload");
+const { PRODUCT_ALL } = require("../constant/productType");
 
 class ProductService {
   static async create({ images, ...data }) {
@@ -20,21 +21,38 @@ class ProductService {
     return newProduct;
   }
 
-  static async getAll() {
-    const products = await prisma.product.findMany({
+  static async getAll({ type = PRODUCT_ALL, limit = 6, categoryIds = [] }) {
+    const query = {
       include: {
         variants: {
-          distinct: "colorId",
-          select: {
+          include: {
             color: true,
           },
         },
+        images: true,
       },
-    });
+      take: limit,
+    };
+
+    if (categoryIds.length > 0) {
+      query.where = {
+        categoryId: {
+          in: categoryIds.map((id) => +id),
+        },
+      };
+    }
+
+    if (type !== PRODUCT_ALL) {
+      query.orderBy = {
+        createdAt: "desc",
+      };
+    }
+    const products = await prisma.product.findMany(query);
     return products.map((product) => ({
       ...product,
-      colors: product.variants.map((v) => v.color),
-      variants: undefined,
+      colors: [
+        ...new Map(product.variants.map((v) => [v.color.id, v.color])).values(),
+      ],
     }));
   }
 
