@@ -3,11 +3,13 @@ const {
   handleNotFoundRoute,
   errorHandler,
 } = require("./middlewares/errorHandler");
+const cors = require("cors");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
 app.use("/api", require("./routes"));
 app.use(handleNotFoundRoute);
