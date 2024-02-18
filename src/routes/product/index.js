@@ -37,12 +37,12 @@ router.get(
   asyncHandler(ProductController.getOne)
 );
 
-// router.get(
-//   "/:slug",
-//   param("slug").custom(existProductWithSlug),
-//   validate,
-//   asyncHandler(ProductController.getOneBySlug)
-// );
+router.get(
+  "/slug/:slug",
+  param("slug").custom(existProductWithSlug),
+  validate,
+  asyncHandler(ProductController.getOneBySlug)
+);
 
 // router.use(authentication);
 
