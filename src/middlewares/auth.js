@@ -12,12 +12,16 @@ const permission = (permittedRoles) => (req, res, next) => {
 };
 
 const authentication = (req, res, next) => {
-  req.account = decodeToken(getTokenFromRequest(req));
+  try {
+    const token = getTokenFromRequest(req);
 
-  next();
+    req.account = jwt.verify(token, process.env.JWT_SECRET);
+
+    next();
+  } catch (error) {
+    throw new UnAuthorized("Invalid token");
+  }
 };
-
-const decodeToken = (token) => jwt.decode(token, process.env.JWT_SECRET);
 
 const getTokenFromRequest = (req) => {
   const requestBearer = req.headers.authorization;

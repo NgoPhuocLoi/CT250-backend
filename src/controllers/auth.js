@@ -1,4 +1,5 @@
 const { OKResponse, CreatedResponse } = require("../response/success");
+const AccountService = require("../services/account");
 const AuthService = require("../services/auth");
 
 class AuthController {
@@ -13,6 +14,12 @@ class AuthController {
     new OKResponse({
       message: "Login successfully",
       metadata: await AuthService.login(req.body),
+    }).send(res);
+  }
+
+  static async getLoggedInAccount(req, res) {
+    new OKResponse({
+      metadata: await AccountService.getOne(req.account.id),
     }).send(res);
   }
 

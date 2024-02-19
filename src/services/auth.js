@@ -5,14 +5,21 @@ const { generatePairTokens } = require("../utils/generateToken");
 const { getRole } = require("../constant/roles");
 
 class AuthService {
-  static async register({ fullName, email, password, phone, gender, birthday }) {
+  static async register({
+    fullName,
+    email,
+    password,
+    phone,
+    gender,
+    birthday,
+  }) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newAccount = await prisma.account.create({
       data: {
         fullName,
         email,
         password: hashedPassword,
-        phone, 
+        phone,
         gender,
         birthday,
       },

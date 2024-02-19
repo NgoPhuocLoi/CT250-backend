@@ -3,6 +3,7 @@ const router = require("express").Router();
 const { body } = require("express-validator");
 const { validate, uniqueEmail } = require("../../middlewares/validation");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
+const { authentication } = require("../../middlewares/auth");
 
 router.post(
   "/register",
@@ -30,6 +31,12 @@ router.post(
   body("password").notEmpty().trim().withMessage("Password is missing!"),
   validate,
   asyncHandler(AuthController.login)
+);
+
+router.get(
+  "/logged-in-account",
+  authentication,
+  AuthController.getLoggedInAccount
 );
 
 module.exports = router;
