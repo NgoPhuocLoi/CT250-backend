@@ -56,21 +56,10 @@ router.post(
   body("overview").notEmpty().withMessage("Overview is missing"),
   body("instruction").notEmpty().withMessage("Instruction is missing"),
   body("categoryId").custom(existCategory),
-  body("images")
-    .notEmpty()
-    .withMessage("Product's images are missing")
+  body("uploadedImageIds")
     .isArray()
-    .withMessage("Product's images should be an array"),
-  body("images.*.path")
-    .notEmpty()
-    .withMessage("Image's path is missing")
-    .isString()
-    .withMessage("Image's path should be a string"),
-  body("images.*.filename")
-    .notEmpty()
-    .withMessage("Image's filename is missing")
-    .isString()
-    .withMessage("Image's filename should be a string"),
+    .withMessage("uploadedImageIds should be an array"),
+
   validate,
   asyncHandler(ProductController.create)
 );
@@ -91,20 +80,20 @@ router.delete(
   asyncHandler(ProductController.delete)
 );
 
-router.post(
-  "/:id/add-image",
-  param("id").custom(existProduct),
-  body("path").notEmpty().withMessage("Image's path is missing"),
-  body("filename").notEmpty().withMessage("Image's filename is missing"),
-  validate,
-  asyncHandler(ProductController.addImage)
-);
+// router.post(
+//   "/:id/add-image",
+//   param("id").custom(existProduct),
+//   body("path").notEmpty().withMessage("Image's path is missing"),
+//   body("filename").notEmpty().withMessage("Image's filename is missing"),
+//   validate,
+//   asyncHandler(ProductController.addImage)
+// );
 
-router.delete(
-  "/delete-image/:imageId",
-  param("imageId").custom(existProductImage),
-  validate,
-  asyncHandler(ProductController.deleteImage)
-);
+// router.delete(
+//   "/delete-image/:imageId",
+//   param("imageId").custom(existProductImage),
+//   validate,
+//   asyncHandler(ProductController.deleteImage)
+// );
 
 module.exports = router;

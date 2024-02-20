@@ -27,6 +27,20 @@ model Account {
   @@map("accounts")
 }
 
+model UploadedImage {
+  id       Int    @id @default(autoincrement()) @map("image_id")
+  path     String
+  filename String @unique
+
+  color         Color?
+  productImages ProductImage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("uploaded_images")
+}
+
 model Role {
   id       Int       @id @default(autoincrement()) @map("role_id")
   role     String
@@ -50,10 +64,19 @@ model Category {
 }
 
 model Color {
-  id         Int       @id @default(autoincrement()) @map("color_id")
-  name       String
-  colorImage String    @map("color_image")
-  variant    Variant[]
+  id   Int    @id @default(autoincrement()) @map("color_id")
+  name String
+
+  thumbnailImageId Int           @unique @map("thumbnail_image_id")
+  thumbnailImage   UploadedImage @relation(fields: [thumbnailImageId], references: [id], onDelete: Cascade)
+
+  productId Int     @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  productImageId Int          @unique @map("product_image_id")
+  productImage   ProductImage @relation(fields: [productImageId], references: [id], onDelete: Cascade)
+
+  variant Variant[]
 
   @@map("colors")
 }
@@ -68,12 +91,16 @@ model Size {
 }
 
 model ProductImage {
-  id        Int     @id @default(autoincrement()) @map("image_id")
-  path      String
-  filename  String
-  productId Int     @map("product_id")
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        Int @id @default(autoincrement()) @map("product_image_id")
+  imageId   Int @map("image_id")
+  productId Int @map("product_id")
 
+  image   UploadedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  color Color?
+
+  @@unique([imageId, productId])
   @@map("product_images")
 }
 
@@ -93,17 +120,16 @@ model Product {
   updatedAt   DateTime       @updatedAt @map("updated_at")
   variants    Variant[]
   images      ProductImage[]
+  colors      Color[]
 
   @@map("products")
 }
 
 model Variant {
-  quantity          Int
-  thumbnailPath     String @map("thumbnail_path")
-  thumbnailFilename String @map("thumbnail_filename")
-  colorId           Int    @map("color_id")
-  sizeId            Int    @map("size_id")
-  productId         Int    @map("product_id")
+  quantity  Int
+  colorId   Int @map("color_id")
+  sizeId    Int @map("size_id")
+  productId Int @map("product_id")
 
   color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id], onDelete: Cascade)
