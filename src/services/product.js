@@ -67,23 +67,23 @@ class ProductService {
   }
 
   static async getOne(productId) {
-    const [product, productColors, productSizes] = await Promise.all([
+    const [product, productSizes] = await Promise.all([
       prisma.product.findUnique({
         where: {
           id: productId,
         },
         include: {
-          images: true,
+          images: {
+            include: {
+              image: true,
+            },
+          },
           variants: true,
-        },
-      }),
-      prisma.variant.findMany({
-        distinct: ["colorId"],
-        where: {
-          productId,
-        },
-        select: {
-          color: true,
+          colors: {
+            include: {
+              thumbnailImage: true,
+            },
+          },
         },
       }),
       prisma.variant.findMany({
@@ -98,7 +98,6 @@ class ProductService {
     ]);
 
     product.sizes = productSizes.map((item) => item.size);
-    product.colors = productColors.map((item) => item.color);
 
     return product;
   }
