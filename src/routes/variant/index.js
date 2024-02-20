@@ -25,7 +25,6 @@ router.post(
     .custom(existColor),
   body("sizeId").notEmpty().withMessage("Size id is missing").custom(existSize),
   param("productId").custom(existProduct),
-  body("thumbnail").notEmpty().withMessage("Variant's thumbnail is missing"),
   validate,
   asyncHandler(VariantController.create)
 );

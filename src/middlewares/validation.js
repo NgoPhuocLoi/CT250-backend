@@ -50,7 +50,16 @@ const existProductImage = async (productImageId, { req }) => {
     where: { id: +productImageId },
   });
   if (!foundProductImage) throw new BadRequest("Product image not found");
-  req.filename = foundProductImage.filename;
+};
+
+const existUploadedImage = async (uploadedImageId) => {
+  if (!uploadedImageId) return true;
+  if (!Number.parseInt(uploadedImageId))
+    throw new BadRequest("Uploaded image not found");
+  const foundImage = await prisma.uploadedImage.findUnique({
+    where: { id: +uploadedImageId },
+  });
+  if (!foundImage) throw new BadRequest("Uploaded image not found");
 };
 
 const existColor = async (colorId) => {
@@ -106,4 +115,5 @@ module.exports = {
   existColor,
   existSize,
   existVariant,
+  existUploadedImage,
 };

@@ -4,18 +4,24 @@ const UploadService = require("./upload");
 const { PRODUCT_ALL } = require("../constant/productType");
 
 class ProductService {
-  static async create({ images, ...data }) {
-    const newProduct = await prisma.product.create({
-      data: {
-        ...data,
-        slug: slugify(data.name + "-" + new Date().getTime(), {
-          lower: true,
-        }),
-      },
-    });
+  static async create({ uploadedImageIds, ...data }) {
+    const newProduct = await prisma.$transaction(async (tx) => {
+      const createdProduct = await tx.product.create({
+        data: {
+          ...data,
+          slug: slugify(data.name + "-" + new Date().getTime(), {
+            lower: true,
+          }),
+        },
+      });
 
-    await prisma.productImage.createMany({
-      data: images.map((image) => ({ ...image, productId: newProduct.id })),
+      await tx.productImage.createMany({
+        data: uploadedImageIds.map((uploadedImageId) => ({
+          imageId: uploadedImageId,
+          productId: createdProduct.id,
+        })),
+      });
+      return createdProduct;
     });
 
     return newProduct;
@@ -29,7 +35,16 @@ class ProductService {
             color: true,
           },
         },
-        images: true,
+        images: {
+          include: {
+            image: true,
+          },
+        },
+        colors: {
+          include: {
+            thumbnailImage: true,
+          },
+        },
       },
       take: limit,
     };
@@ -48,32 +63,27 @@ class ProductService {
       };
     }
     const products = await prisma.product.findMany(query);
-    return products.map((product) => ({
-      ...product,
-      colors: [
-        ...new Map(product.variants.map((v) => [v.color.id, v.color])).values(),
-      ],
-    }));
+    return products;
   }
 
   static async getOne(productId) {
-    const [product, productColors, productSizes] = await Promise.all([
+    const [product, productSizes] = await Promise.all([
       prisma.product.findUnique({
         where: {
           id: productId,
         },
         include: {
-          images: true,
+          images: {
+            include: {
+              image: true,
+            },
+          },
           variants: true,
-        },
-      }),
-      prisma.variant.findMany({
-        distinct: ["colorId"],
-        where: {
-          productId,
-        },
-        select: {
-          color: true,
+          colors: {
+            include: {
+              thumbnailImage: true,
+            },
+          },
         },
       }),
       prisma.variant.findMany({
@@ -88,7 +98,6 @@ class ProductService {
     ]);
 
     product.sizes = productSizes.map((item) => item.size);
-    product.colors = productColors.map((item) => item.color);
 
     return product;
   }
@@ -154,12 +163,11 @@ class ProductService {
     await prisma.product.delete({ where: { id: productId } });
   }
 
-  static async addImage(productId, { path, filename }) {
+  static async addImage(productId, uploadedImageId) {
     return await prisma.productImage.create({
       data: {
         productId,
-        path,
-        filename,
+        imageId: uploadedImageId,
       },
     });
   }
@@ -171,7 +179,7 @@ class ProductService {
           id: productImageId,
         },
       }),
-      UploadService.destroyImage(filename),
+      UploadService.destroyImage(productImageId),
     ]);
   }
 }
