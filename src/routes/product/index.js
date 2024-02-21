@@ -7,6 +7,7 @@ const {
   validate,
   existProductImage,
   existCategory,
+  existUploadedImage,
 } = require("../../middlewares/validation");
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
@@ -80,14 +81,16 @@ router.delete(
   asyncHandler(ProductController.delete)
 );
 
-// router.post(
-//   "/:id/add-image",
-//   param("id").custom(existProduct),
-//   body("path").notEmpty().withMessage("Image's path is missing"),
-//   body("filename").notEmpty().withMessage("Image's filename is missing"),
-//   validate,
-//   asyncHandler(ProductController.addImage)
-// );
+router.post(
+  "/:id/add-image",
+  param("id").custom(existProduct),
+  body("uploadedImageId")
+    .notEmpty()
+    .withMessage("uploadedImageId is missing")
+    .custom(existUploadedImage),
+  validate,
+  asyncHandler(ProductController.addImage)
+);
 
 // router.delete(
 //   "/delete-image/:imageId",

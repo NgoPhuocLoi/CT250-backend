@@ -9,9 +9,12 @@ class ProductService {
       const createdProduct = await tx.product.create({
         data: {
           ...data,
-          slug: slugify(data.name + "-" + new Date().getTime(), {
-            lower: true,
-          }),
+          slug: slugify(
+            data.name + "-" + new Date().getTime() + "-" + Math.random(),
+            {
+              lower: true,
+            }
+          ),
         },
       });
 
@@ -30,11 +33,6 @@ class ProductService {
   static async getAll({ type = PRODUCT_ALL, limit = 6, categoryIds = [] }) {
     const query = {
       include: {
-        variants: {
-          include: {
-            color: true,
-          },
-        },
         images: {
           include: {
             image: true,
@@ -43,6 +41,11 @@ class ProductService {
         colors: {
           include: {
             thumbnailImage: true,
+            productImage: {
+              include: {
+                image: true,
+              },
+            },
           },
         },
       },
@@ -76,6 +79,11 @@ class ProductService {
           images: {
             include: {
               image: true,
+              color: {
+                select: {
+                  id: true,
+                },
+              },
             },
           },
           variants: true,
@@ -97,7 +105,9 @@ class ProductService {
       }),
     ]);
 
-    product.sizes = productSizes.map((item) => item.size);
+    product.sizes = productSizes
+      .map((item) => item.size)
+      .sort((a, b) => b.id - a.id);
 
     return product;
   }
@@ -111,6 +121,11 @@ class ProductService {
         images: {
           include: {
             image: true,
+            color: {
+              select: {
+                id: true,
+              },
+            },
           },
         },
         variants: true,
@@ -132,7 +147,9 @@ class ProductService {
       },
     });
 
-    product.sizes = productSizes.map((item) => item.size);
+    product.sizes = productSizes
+      .map((item) => item.size)
+      .sort((a, b) => a.id - b.id);
 
     return product;
   }
@@ -161,7 +178,7 @@ class ProductService {
     await prisma.product.delete({ where: { id: productId } });
   }
 
-  static async addImage(productId, uploadedImageId) {
+  static async addImage(productId, { uploadedImageId }) {
     return await prisma.productImage.create({
       data: {
         productId,
