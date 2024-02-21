@@ -17,12 +17,12 @@ class UploadService {
   }
 
   static async destroyImage(uploadedImageId) {
-    const uploadedImage = await prisma.uploadedImage.findUnique({
+    const deletedImage = await prisma.uploadedImage.delete({
       where: {
         id: uploadedImageId,
       },
     });
-    return await cloudinary.uploader.destroy(uploadedImage.filename);
+    return await cloudinary.uploader.destroy(deletedImage.filename);
   }
 }
 

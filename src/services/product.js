@@ -103,40 +103,38 @@ class ProductService {
   }
 
   static async getOneBySlug(productSlug) {
-    const foundProduct = await prisma.product.findUnique({
+    const product = await prisma.product.findUnique({
       where: {
         slug: productSlug,
       },
       include: {
-        images: true,
+        images: {
+          include: {
+            image: true,
+          },
+        },
         variants: true,
+        colors: {
+          include: {
+            thumbnailImage: true,
+          },
+        },
       },
     });
-    const [productColors, productSizes] = await Promise.all([
-      prisma.variant.findMany({
-        distinct: ["colorId"],
-        where: {
-          productId: foundProduct.id,
-        },
-        select: {
-          color: true,
-        },
-      }),
-      prisma.variant.findMany({
-        distinct: ["sizeId"],
-        where: {
-          productId: foundProduct.id,
-        },
-        select: {
-          size: true,
-        },
-      }),
-    ]);
 
-    foundProduct.sizes = productSizes.map((item) => item.size);
-    foundProduct.colors = productColors.map((item) => item.color);
+    const productSizes = await prisma.variant.findMany({
+      distinct: ["sizeId"],
+      where: {
+        productId: product.id,
+      },
+      select: {
+        size: true,
+      },
+    });
 
-    return foundProduct;
+    product.sizes = productSizes.map((item) => item.size);
+
+    return product;
   }
 
   static async update(productId, updatedData) {
@@ -157,7 +155,7 @@ class ProductService {
     });
 
     await Promise.all(
-      product.images.map((image) => UploadService.destroyImage(image.filename))
+      product.images.map((image) => UploadService.destroyImage(image.imageId))
     );
 
     await prisma.product.delete({ where: { id: productId } });
