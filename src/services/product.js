@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 const UploadService = require("./upload");
 const { PRODUCT_ALL } = require("../constant/productType");
+const CategoryService = require("./category");
 
 class ProductService {
   static async create({ uploadedImageIds, ...data }) {
@@ -31,6 +32,7 @@ class ProductService {
   }
 
   static async getAll({ type = PRODUCT_ALL, limit = 6, categoryIds = [] }) {
+    // await CategoryService.getCategoriesRecursivelyFromParent(2);
     const query = {
       include: {
         images: {
@@ -53,9 +55,15 @@ class ProductService {
     };
 
     if (categoryIds.length > 0) {
+      const res = await Promise.all(
+        categoryIds.map((categoryId) =>
+          CategoryService.getCategoriesRecursivelyFromParent(+categoryId)
+        )
+      );
+      const recursiveCategoryIds = Array.from(new Set(res.flat()));
       query.where = {
         categoryId: {
-          in: categoryIds.map((id) => +id),
+          in: recursiveCategoryIds,
         },
       };
     }

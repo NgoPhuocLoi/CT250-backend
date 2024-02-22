@@ -29,6 +29,25 @@ class CategoryService {
     });
   }
 
+  static async getCategoriesRecursivelyFromParent(parentCategoryId) {
+    let result = [];
+    let index = 0;
+    while (parentCategoryId) {
+      const categoryIds = await prisma.category.findMany({
+        where: {
+          parentId: parentCategoryId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      categoryIds.forEach((category) => result.push(category.id));
+      parentCategoryId = result[index++];
+    }
+    return result;
+  }
+
   static async update(categoryId, updatedData) {
     return await prisma.category.update({
       where: {
