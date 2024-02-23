@@ -14,6 +14,7 @@ class ProductController {
         type: req.query.type,
         categoryIds: req.query.categoryIds,
         limit: +req.query.limit,
+        productIds: req.query.productIds,
       }),
     }).send(res);
   }

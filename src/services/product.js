@@ -31,7 +31,12 @@ class ProductService {
     return newProduct;
   }
 
-  static async getAll({ type = PRODUCT_ALL, limit = 6, categoryIds = [] }) {
+  static async getAll({
+    type = PRODUCT_ALL,
+    limit = 6,
+    categoryIds = [],
+    productIds = [],
+  }) {
     // await CategoryService.getCategoriesRecursivelyFromParent(2);
     const query = {
       include: {
@@ -66,6 +71,20 @@ class ProductService {
           in: recursiveCategoryIds,
         },
       };
+    }
+
+    if (productIds.length > 0) {
+      if (query.where) {
+        query.where.id = {
+          in: productIds.map((id) => +id),
+        };
+      } else {
+        query.where = {
+          id: {
+            in: productIds.map((id) => +id),
+          },
+        };
+      }
     }
 
     if (type !== PRODUCT_ALL) {
