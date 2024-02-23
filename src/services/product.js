@@ -74,6 +74,7 @@ class ProductService {
       };
     }
     const products = await prisma.product.findMany(query);
+
     return products;
   }
 

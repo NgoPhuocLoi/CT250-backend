@@ -30,7 +30,7 @@ class CategoryService {
   }
 
   static async getCategoriesRecursivelyFromParent(parentCategoryId) {
-    let result = [];
+    let result = [parentCategoryId];
     let index = 0;
     while (parentCategoryId) {
       const categoryIds = await prisma.category.findMany({
