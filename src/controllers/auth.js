@@ -17,13 +17,20 @@ class AuthController {
     }).send(res);
   }
 
+  static async loginWithGoogle(req, res) {
+    new OKResponse({
+      message: "Login with google successfully",
+      metadata: await AuthService.loginWithGoogle(req.body),
+    }).send(res);
+  }
+
   static async getLoggedInAccount(req, res) {
     new OKResponse({
       metadata: await AccountService.getOne(req.account.id),
     }).send(res);
   }
 
-  static async updateRole(req, res) {}
+  static async updateRole(req, res) { }
 }
 
 module.exports = AuthController;

@@ -43,20 +43,59 @@ class AuthService {
 
     if (!matchedPassword) throw new BadRequest("Invalid credentials");
 
-    const tokens = generatePairTokens({
-      id: account.id,
-      role: getRole(account.roleId),
-    });
-    return {
-      account: {
-        ...account,
-        password: undefined,
-        role: account.role.role,
-        roleId: undefined,
-      },
-      tokens,
-    };
+    return generateToken(account);
   }
+
+  static async loginWithGoogle({ email, fullName, phone }) { // photoURL
+
+    let account = await prisma.account.findUnique({
+      where: { email },
+      include: {
+        role: {
+          select: { role: true },
+        },
+      },
+    });
+
+    // create account
+    if (!account) {
+      const newAccount = await prisma.account.create({
+        data: {
+          fullName,
+          email,
+          password: "",
+          phone,
+          gender: true,
+          birthday: null,
+        },
+      });
+      account = await prisma.account.findUnique({
+        where: { email: newAccount.email },
+        include: {
+          role: {
+            select: { role: true },
+          },
+        },
+      });
+    }
+    return generateToken(account);
+  }
+}
+
+function generateToken(account) {
+  const tokens = generatePairTokens({
+    id: account.id,
+    role: getRole(account.roleId),
+  });
+  return {
+    account: {
+      ...account,
+      password: undefined,
+      role: account.role.role,
+      roleId: undefined,
+    },
+    tokens,
+  };
 }
 
 module.exports = AuthService;

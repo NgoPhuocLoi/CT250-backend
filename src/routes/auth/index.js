@@ -33,6 +33,11 @@ router.post(
   asyncHandler(AuthController.login)
 );
 
+router.post(
+  "/loginWithGoogle",
+  asyncHandler(AuthController.loginWithGoogle)
+);
+
 router.get(
   "/logged-in-account",
   authentication,
