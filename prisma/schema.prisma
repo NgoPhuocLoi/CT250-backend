@@ -11,20 +11,43 @@ datasource db {
 }
 
 model Account {
-  id        Int       @id @default(autoincrement()) @map("account_id")
-  fullName  String    @map("full_name")
-  email     String    @unique
-  password  String
-  active    Boolean   @default(true)
-  phone     String?
-  gender    Boolean?
-  birthday  DateTime? @db.Date
-  roleId    Int       @default(3) @map("role_id")
-  role      Role      @relation(fields: [roleId], references: [id])
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id       Int       @id @default(autoincrement()) @map("account_id")
+  fullName String    @map("full_name")
+  email    String    @unique
+  password String
+  active   Boolean   @default(true)
+  phone    String?
+  gender   Boolean?
+  birthday DateTime? @db.Date
+
+  roleId Int  @default(3) @map("role_id")
+  role   Role @relation(fields: [roleId], references: [id])
+
+  addresses Address[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("accounts")
+}
+
+model Address {
+  id            Int     @id @default(autoincrement()) @map("address_id")
+  provinceName  String  @map("province_name")
+  provinceId    Int     @map("province_id")
+  districtName  String  @map("district_name")
+  districtId    Int     @map("district_id")
+  wardName      String  @map("ward_name")
+  wardCode      String  @map("ward_code")
+  contactName   String  @map("contact_name")
+  contactPhone  String  @map("contact_phone")
+  detailAddress String  @map("detail_address")
+  isDefault     Boolean @default(false) @map("is_default")
+
+  accountId Int     @map("account_id")
+  account   Account @relation(fields: [accountId], references: [id])
+
+  @@map("addresses")
 }
 
 model UploadedImage {

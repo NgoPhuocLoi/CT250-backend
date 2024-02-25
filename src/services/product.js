@@ -85,6 +85,8 @@ class ProductService {
           },
         };
       }
+
+      query.include.variants = true;
     }
 
     if (type !== PRODUCT_ALL) {

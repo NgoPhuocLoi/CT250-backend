@@ -97,6 +97,66 @@ const existVariant = async (productId, { req }) => {
   if (!foundVariant) throw new BadRequest("Variant not found");
 };
 
+const existProvince = async (provinceId, { req }) => {
+  if (!provinceId) return true;
+  const res = await fetch(`${process.env.GHN_BASE_API_URL}/province`, {
+    method: "GET",
+    headers: {
+      Token: process.env.GHN_TOKEN_API,
+    },
+  });
+
+  const provinces = (await res.json()).data;
+
+  const foundProvince = provinces.find(
+    (province) => province.ProvinceID === provinceId
+  );
+
+  if (!foundProvince) throw new BadRequest("Province not found");
+
+  req.body.provinceName = foundProvince.ProvinceName;
+};
+
+// const existDistrictOfProvince = async (districtId, { req }) => {
+//   if (!provinceId) return true;
+//   const res = await fetch(`${process.env.GHN_BASE_API_URL}/province`, {
+//     method: "GET",
+//     headers: {
+//       Token: process.env.GHN_TOKEN_API,
+//     },
+//   });
+
+//   const provinces = (await res.json()).data;
+
+//   const foundProvince = provinces.find(
+//     (province) => province.ProvinceID === provinceId
+//   );
+
+//   if (!foundProvince) throw new BadRequest("Province not found");
+
+//   req.body.provinceName = foundProvince.ProvinceName;
+// };
+
+// const existWardOfDistrict = async (provinceId, { req }) => {
+//   if (!provinceId) return true;
+//   const res = await fetch(`${process.env.GHN_BASE_API_URL}/province`, {
+//     method: "GET",
+//     headers: {
+//       Token: process.env.GHN_TOKEN_API,
+//     },
+//   });
+
+//   const provinces = (await res.json()).data;
+
+//   const foundProvince = provinces.find(
+//     (province) => province.ProvinceID === provinceId
+//   );
+
+//   if (!foundProvince) throw new BadRequest("Province not found");
+
+//   req.body.provinceName = foundProvince.ProvinceName;
+// };
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -116,4 +176,5 @@ module.exports = {
   existSize,
   existVariant,
   existUploadedImage,
+  existProvince,
 };
