@@ -117,45 +117,64 @@ const existProvince = async (provinceId, { req }) => {
   req.body.provinceName = foundProvince.ProvinceName;
 };
 
-// const existDistrictOfProvince = async (districtId, { req }) => {
-//   if (!provinceId) return true;
-//   const res = await fetch(`${process.env.GHN_BASE_API_URL}/province`, {
-//     method: "GET",
-//     headers: {
-//       Token: process.env.GHN_TOKEN_API,
-//     },
-//   });
+const existDistrictOfProvince = async (districtId, { req }) => {
+  if (!districtId || !req.body.provinceId) return true;
+  const res = await fetch(
+    `${process.env.GHN_BASE_API_URL}/district?province_id=${req.body.provinceId}`,
+    {
+      method: "GET",
+      headers: {
+        Token: process.env.GHN_TOKEN_API,
+      },
+    }
+  );
 
-//   const provinces = (await res.json()).data;
+  const districts = (await res.json()).data;
 
-//   const foundProvince = provinces.find(
-//     (province) => province.ProvinceID === provinceId
-//   );
+  const foundDistrict = districts.find(
+    (district) => district.DistrictID === districtId
+  );
 
-//   if (!foundProvince) throw new BadRequest("Province not found");
+  if (!foundDistrict) throw new BadRequest("District not found");
 
-//   req.body.provinceName = foundProvince.ProvinceName;
-// };
+  req.body.districtName = foundDistrict.DistrictName;
+};
 
-// const existWardOfDistrict = async (provinceId, { req }) => {
-//   if (!provinceId) return true;
-//   const res = await fetch(`${process.env.GHN_BASE_API_URL}/province`, {
-//     method: "GET",
-//     headers: {
-//       Token: process.env.GHN_TOKEN_API,
-//     },
-//   });
+const existWardOfDistrict = async (wardCode, { req }) => {
+  if (!wardCode || !req.body.districtId) return true;
+  const res = await fetch(
+    `${process.env.GHN_BASE_API_URL}/ward?district_id=${req.body.districtId}`,
+    {
+      method: "GET",
+      headers: {
+        Token: process.env.GHN_TOKEN_API,
+      },
+    }
+  );
 
-//   const provinces = (await res.json()).data;
+  const wards = (await res.json()).data;
 
-//   const foundProvince = provinces.find(
-//     (province) => province.ProvinceID === provinceId
-//   );
+  console.log(wards);
 
-//   if (!foundProvince) throw new BadRequest("Province not found");
+  const foundWard = wards.find((ward) => ward.WardCode === wardCode);
 
-//   req.body.provinceName = foundProvince.ProvinceName;
-// };
+  if (!foundWard) throw new BadRequest("Ward not found");
+
+  req.body.wardName = foundWard.WardName;
+};
+
+const existAddressOfAccount = async (addressId, { req }) => {
+  if (!addressId) return true;
+
+  const foundAddress = await prisma.address.findFirst({
+    where: {
+      id: +addressId,
+      accountId: +req.account.id,
+    },
+  });
+
+  if (!foundAddress) throw new BadRequest("Address not found");
+};
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -177,4 +196,7 @@ module.exports = {
   existVariant,
   existUploadedImage,
   existProvince,
+  existDistrictOfProvince,
+  existWardOfDistrict,
+  existAddressOfAccount,
 };

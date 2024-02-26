@@ -1,26 +1,36 @@
-const { CreatedResponse } = require("../response/success");
+const { CreatedResponse, OKResponse } = require("../response/success");
 const AddressService = require("../services/address");
 
 class AddressController {
   static async create(req, res) {
-    console.log(req.account.id);
-    console.log(req.body);
-    // new CreatedResponse({
-    //   metadata: await AddressService.create(req.account.id, req.body)
-    // });
-    res.send("OK");
+    new CreatedResponse({
+      metadata: await AddressService.create(req.account.id, req.body),
+    }).send(res);
   }
 
   static async getAll(req, res) {
-    return res.json("GET ALL");
+    new OKResponse({
+      metadata: await AddressService.getAddressesByAccountId(+req.account.id),
+    }).send(res);
   }
 
   static async update(req, res) {
-    return res.json("UPDATE");
+    new OKResponse({
+      metadata: await AddressService.updateById(
+        +req.params.addressId,
+        +req.account.id,
+        req.body
+      ),
+    }).send(res);
   }
 
   static async delete(req, res) {
-    return res.json("DELETE");
+    new OKResponse({
+      metadata: await AddressService.deleteById(
+        +req.params.addressId,
+        +req.account.id
+      ),
+    }).send(res);
   }
 }
 
