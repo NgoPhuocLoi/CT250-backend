@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const { BadRequest } = require("../response/error");
 const prisma = require("../config/prismaClient");
+const GiaoHangNhanhService = require("../services/ghn");
 
 const uniqueEmail = async (email) => {
   if (!email) return false;
@@ -99,14 +100,8 @@ const existVariant = async (productId, { req }) => {
 
 const existProvince = async (provinceId, { req }) => {
   if (!provinceId) return true;
-  const res = await fetch(`${process.env.GHN_BASE_API_URL}/province`, {
-    method: "GET",
-    headers: {
-      Token: process.env.GHN_TOKEN_API,
-    },
-  });
 
-  const provinces = (await res.json()).data;
+  const provinces = await GiaoHangNhanhService.getProvinces();
 
   const foundProvince = provinces.find(
     (province) => province.ProvinceID === provinceId
@@ -119,17 +114,10 @@ const existProvince = async (provinceId, { req }) => {
 
 const existDistrictOfProvince = async (districtId, { req }) => {
   if (!districtId || !req.body.provinceId) return true;
-  const res = await fetch(
-    `${process.env.GHN_BASE_API_URL}/district?province_id=${req.body.provinceId}`,
-    {
-      method: "GET",
-      headers: {
-        Token: process.env.GHN_TOKEN_API,
-      },
-    }
-  );
 
-  const districts = (await res.json()).data;
+  const districts = await GiaoHangNhanhService.getDistrictsByProvinceId(
+    req.body.provinceId
+  );
 
   const foundDistrict = districts.find(
     (district) => district.DistrictID === districtId
@@ -142,19 +130,10 @@ const existDistrictOfProvince = async (districtId, { req }) => {
 
 const existWardOfDistrict = async (wardCode, { req }) => {
   if (!wardCode || !req.body.districtId) return true;
-  const res = await fetch(
-    `${process.env.GHN_BASE_API_URL}/ward?district_id=${req.body.districtId}`,
-    {
-      method: "GET",
-      headers: {
-        Token: process.env.GHN_TOKEN_API,
-      },
-    }
+
+  const wards = await GiaoHangNhanhService.getWardsByDistrictId(
+    req.body.districtId
   );
-
-  const wards = (await res.json()).data;
-
-  console.log(wards);
 
   const foundWard = wards.find((ward) => ward.WardCode === wardCode);
 

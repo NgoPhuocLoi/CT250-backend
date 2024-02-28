@@ -1,4 +1,4 @@
-const { body, param } = require("express-validator");
+const { body, param, query } = require("express-validator");
 const AddressController = require("../../controllers/address");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
 const { authentication } = require("../../middlewares/auth");
@@ -11,6 +11,20 @@ const {
 } = require("../../middlewares/validation");
 
 const router = require("express").Router();
+
+router.get("/provinces", asyncHandler(AddressController.getProvinces));
+router.get(
+  "/districts",
+  query("provinceId").notEmpty().withMessage("Province ID is missing"),
+  validate,
+  asyncHandler(AddressController.getDistricts)
+);
+router.get(
+  "/wards",
+  query("districtId").notEmpty().withMessage("District ID is missing"),
+  validate,
+  asyncHandler(AddressController.getWards)
+);
 
 router.use(authentication);
 
