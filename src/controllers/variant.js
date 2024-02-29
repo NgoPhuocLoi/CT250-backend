@@ -8,6 +8,12 @@ class VariantController {
     }).send(res);
   }
 
+  static async getByVariantIds(req, res) {
+    new OKResponse({
+      metadata: await VariantService.getByVariantIds(req.query.variantIds),
+    }).send(res);
+  }
+
   static async update(req, res) {
     new OKResponse({
       metadata: await VariantService.update(+req.params.productId, req.body),

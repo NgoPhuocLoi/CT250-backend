@@ -7,10 +7,13 @@ router.use("/categories", require("./category"));
 router.use("/accounts", require("./account"));
 router.use("/products/:productId/variants", require("./variant"));
 router.use("/products", require("./product"));
+router.use("/variants", require("./variant/variantInfo"));
 router.use("/colors", require("./color"));
 router.use("/sizes", require("./size"));
 router.use("/upload", require("./upload"));
 router.use("/addresses", require("./address"));
 router.use("/shippings", require("./shipping"));
+router.use("/payments", require("./payment"));
+router.use("/orders", require("./order"));
 
 module.exports = router;

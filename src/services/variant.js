@@ -13,6 +13,30 @@ class VariantService {
     });
   }
 
+  static async getByVariantIds(variantIds = []) {
+    return await prisma.variant.findMany({
+      where: {
+        id: {
+          in: variantIds.map((id) => +id),
+        },
+      },
+      include: {
+        color: {
+          include: {
+            productImage: {
+              include: {
+                image: true,
+              },
+            },
+            thumbnailImage: true,
+          },
+        },
+        size: true,
+        product: true,
+      },
+    });
+  }
+
   static async update(productId, { colorId, sizeId, quantity, thumbnail }) {
     return await prisma.variant.update({
       where: {
