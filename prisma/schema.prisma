@@ -24,6 +24,7 @@ model Account {
   role   Role @relation(fields: [roleId], references: [id])
 
   addresses Address[]
+  orders    Order[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -43,9 +44,11 @@ model Address {
   contactPhone  String  @map("contact_phone")
   detailAddress String  @map("detail_address")
   isDefault     Boolean @default(false) @map("is_default")
+  isDeleted     Boolean @default(false) @map("is_deleted")
 
   accountId Int     @map("account_id")
   account   Account @relation(fields: [accountId], references: [id])
+  orders    Order[]
 
   @@map("addresses")
 }
@@ -149,6 +152,7 @@ model Product {
 }
 
 model Variant {
+  id        Int @id @default(autoincrement()) @map("variant_id")
   quantity  Int
   colorId   Int @map("color_id")
   sizeId    Int @map("size_id")
@@ -158,9 +162,95 @@ model Variant {
   size    Size    @relation(fields: [sizeId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  OrderDetail OrderDetail[]
+
+  @@unique([productId, colorId, sizeId])
+  @@map("variants")
+}
+
+model PaymentMethod {
+  id   Int    @id @default(autoincrement()) @map("payment_method_id")
+  name String
+
+  payments Payment[]
+
+  @@map("payment_methods")
+}
+
+model Payment {
+  id              Int     @id @default(autoincrement()) @map("payment_id")
+  amount          Float
+  success         Boolean
+  paymentMethodId Int     @map("payment_method_id")
+  orderId         Int     @unique @map("order_id")
+
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  order         Order         @relation(fields: [orderId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([productId, colorId, sizeId])
-  @@map("variants")
+  @@map("payments")
+}
+
+model OrderStatus {
+  id   Int    @id @default(autoincrement()) @map("order_status_id")
+  name String
+
+  orders        Order[]
+  OrderTracking OrderTracking[]
+
+  @@map("order_statuses")
+}
+
+model Order {
+  id                Int   @id @default(autoincrement()) @map("order_id")
+  totalPrice        Float @map("total_price")
+  totalDiscount     Float @map("total_discount")
+  finalPrice        Float @map("final_price")
+  shippingFee       Float @map("shipping_fee")
+  buyerId           Int   @map("buyer_id")
+  deliveryAddressId Int   @map("delivery_address_id")
+  currentStatusId   Int   @map("current_status_id")
+
+  buyer           Account         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  currentStatus   OrderStatus     @relation(fields: [currentStatusId], references: [id])
+  deliveryAddress Address         @relation(fields: [deliveryAddressId], references: [id])
+  Payment         Payment?
+  OrderTracking   OrderTracking[]
+  OrderDetail     OrderDetail[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model OrderTracking {
+  id            Int       @id @default(autoincrement()) @map("order_tracking_id")
+  orderId       Int       @map("order_id")
+  orderStatusId Int       @map("order_status_id")
+  beginAt       DateTime  @default(now()) @map("begin_at")
+  finishAt      DateTime? @map("finish_at")
+
+  order       Order       @relation(fields: [orderId], references: [id])
+  orderStatus OrderStatus @relation(fields: [orderStatusId], references: [id])
+
+  @@unique([orderId, orderStatusId])
+  @@map("order_trackings")
+}
+
+model OrderDetail {
+  orderId   Int   @map("order_id")
+  variantId Int   @map("variant_id")
+  quantity  Int
+  price     Float
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  variant Variant @relation(fields: [variantId], references: [id])
+
+  @@id([orderId, variantId])
+  @@map("order_details")
 }
