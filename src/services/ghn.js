@@ -53,6 +53,29 @@ class GiaoHangNhanhService {
     return (await res.json()).data;
   }
 
+  static async getAvailableShippingServices({
+    shopId,
+    fromDistrictId,
+    toDistrictId,
+  }) {
+    const res = await fetch(
+      `${process.env.GHN_V2_API_URL}/shipping-order/available-services`,
+      {
+        method: "POST",
+        headers: {
+          Token: process.env.GHN_TOKEN_API,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          shop_id: shopId,
+          from_district: fromDistrictId,
+          to_district: toDistrictId,
+        }),
+      }
+    );
+    return (await res.json()).data;
+  }
+
   static async calculateOrderFee(
     shopId,
     {
