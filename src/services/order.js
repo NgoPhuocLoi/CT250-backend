@@ -1,5 +1,6 @@
 const prisma = require("../config/prismaClient");
 const { ORDER_STATUS_ID_MAPPING } = require("../constant/orderStatus");
+const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
 const { BadRequest } = require("../response/error");
 
 class OrderService {
@@ -10,6 +11,7 @@ class OrderService {
     shippingFee,
     buyerId,
     deliveryAddressId,
+    paymentMethodId,
     items = [],
   }) {
     await this.validateOrder({
@@ -19,6 +21,7 @@ class OrderService {
       shippingFee,
       items,
     });
+
     return await prisma.$transaction(async (tx) => {
       const createdOrder = await tx.order.create({
         data: {
@@ -41,18 +44,20 @@ class OrderService {
         })),
       });
 
-      await tx.variant.updateMany({
-        where: {
-          id: {
-            in: items.map((item) => +item.variantId),
-          },
-        },
-        data: {
-          quantity: {
-            decrement: 1,
-          },
-        },
-      });
+      await Promise.all(
+        items.map((item) =>
+          tx.variant.update({
+            where: {
+              id: +item.variantId,
+            },
+            data: {
+              quantity: {
+                decrement: +item.quantity,
+              },
+            },
+          })
+        )
+      );
 
       const productSoldNumberToUpDate = [];
 
@@ -87,6 +92,15 @@ class OrderService {
         )
       );
 
+      await tx.payment.create({
+        data: {
+          amount: createdOrder.finalPrice,
+          orderId: createdOrder.id,
+          paymentMethodId,
+          paymentStatusId: PAYMENT_STATUS_ID_MAPPING.PENDING,
+        },
+      });
+
       return createdOrder;
     });
   }
@@ -103,9 +117,147 @@ class OrderService {
     return await prisma.order.findMany({
       where: query,
       include: {
-        OrderDetail: true,
+        OrderDetail: {
+          include: {
+            variant: {
+              include: {
+                color: {
+                  include: {
+                    productImage: {
+                      include: {
+                        image: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         currentStatus: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  static async getById(orderId) {
+    return await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+      include: {
+        deliveryAddress: true,
+        currentStatus: true,
+        OrderDetail: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  select: {
+                    name: true,
+                  },
+                },
+                color: {
+                  include: {
+                    productImage: {
+                      include: {
+                        image: true,
+                      },
+                    },
+                  },
+                },
+                size: true,
+              },
+            },
+          },
+        },
+        Payment: {
+          include: {
+            paymentMethod: true,
+            paymentStatus: true,
+          },
+        },
+      },
+    });
+  }
+
+  static async cancel(orderId) {
+    const foundedOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        OrderDetail: {
+          include: {
+            variant: true,
+          },
+        },
+      },
+    });
+
+    if (
+      foundedOrder.currentStatusId !=
+        ORDER_STATUS_ID_MAPPING.AWAITING_CONFIRM &&
+      foundedOrder != ORDER_STATUS_ID_MAPPING.AWAITING_FULFILLMENT
+    ) {
+      throw new BadRequest("You can not cancel the delivering order");
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      await Promise.all(
+        foundedOrder.OrderDetail.map((item) =>
+          tx.variant.update({
+            where: {
+              id: item.variantId,
+            },
+            data: {
+              quantity: {
+                increment: item.quantity,
+              },
+            },
+          })
+        )
+      );
+
+      const productSoldNumberToUpDate = [];
+
+      foundedOrder.OrderDetail.forEach((item) => {
+        const foundProductIndex = productSoldNumberToUpDate.findIndex(
+          (product) => product.productId === item.variant.productId
+        );
+
+        if (foundProductIndex < 0) {
+          productSoldNumberToUpDate.push({
+            productId: item.variant.productId,
+            quantity: item.quantity,
+          });
+        } else {
+          productSoldNumberToUpDate[foundProductIndex].quantity +=
+            item.quantity;
+        }
+      });
+
+      await Promise.all(
+        productSoldNumberToUpDate.map((product) =>
+          tx.product.update({
+            where: {
+              id: product.productId,
+            },
+            data: {
+              soldNumber: {
+                decrement: product.quantity,
+              },
+            },
+          })
+        )
+      );
+
+      return await tx.order.update({
+        where: { id: foundedOrder.id },
+        data: {
+          currentStatusId: ORDER_STATUS_ID_MAPPING.CANCELED,
+        },
+      });
     });
   }
 

@@ -155,6 +155,19 @@ const existAddressOfAccount = async (addressId, { req }) => {
   if (!foundAddress) throw new BadRequest("Address not found");
 };
 
+const existOrderOfAccount = async (orderId, { req }) => {
+  if (!orderId) return true;
+
+  const foundOrder = await prisma.order.findFirst({
+    where: {
+      id: +orderId,
+      buyerId: +req.account.id,
+    },
+  });
+
+  if (!foundOrder) throw new BadRequest("Order not found");
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -178,4 +191,5 @@ module.exports = {
   existDistrictOfProvince,
   existWardOfDistrict,
   existAddressOfAccount,
+  existOrderOfAccount,
 };

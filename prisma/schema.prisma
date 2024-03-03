@@ -180,14 +180,24 @@ model PaymentMethod {
   @@map("payment_methods")
 }
 
+model PaymentStatus {
+  id   Int    @id @default(autoincrement()) @map("payment_status_id")
+  name String
+
+  payments Payment[]
+
+  @@map("payment_statuses")
+}
+
 model Payment {
-  id              Int     @id @default(autoincrement()) @map("payment_id")
+  id              Int   @id @default(autoincrement()) @map("payment_id")
   amount          Float
-  success         Boolean
-  paymentMethodId Int     @map("payment_method_id")
-  orderId         Int     @unique @map("order_id")
+  paymentStatusId Int
+  paymentMethodId Int   @map("payment_method_id")
+  orderId         Int   @unique @map("order_id")
 
   paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  paymentStatus PaymentStatus @relation(fields: [paymentStatusId], references: [id])
   order         Order         @relation(fields: [orderId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")

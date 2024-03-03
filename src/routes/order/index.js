@@ -1,10 +1,11 @@
-const { body, query } = require("express-validator");
+const { body, query, param } = require("express-validator");
 const OrderController = require("../../controllers/order");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
 const { authentication } = require("../../middlewares/auth");
 const {
   validate,
   existAddressOfAccount,
+  existOrderOfAccount,
 } = require("../../middlewares/validation");
 
 const router = require("express").Router();
@@ -21,6 +22,7 @@ router.post(
     .notEmpty()
     .withMessage("deliveryAddressId is missing")
     .custom(existAddressOfAccount),
+  body("paymentMethodId").notEmpty().withMessage("paymentMethodId is missing"),
   body("items")
     .notEmpty()
     .withMessage("Items is missing")
@@ -40,6 +42,15 @@ router.post(
   asyncHandler(OrderController.create)
 );
 
+router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
+
+router.get(
+  "/:orderId",
+  param("orderId").custom(existOrderOfAccount),
+  validate,
+  asyncHandler(OrderController.getById)
+);
+
 router.get(
   "/",
   query("orderStatusId").notEmpty().withMessage("Order status ID is mising"),
@@ -47,6 +58,11 @@ router.get(
   asyncHandler(OrderController.getOrdersOfBuyerByOrderStatus)
 );
 
-router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
+router.put(
+  "/:orderId",
+  param("orderId").custom(existOrderOfAccount),
+  validate,
+  asyncHandler(OrderController.cancel)
+);
 
 module.exports = router;
