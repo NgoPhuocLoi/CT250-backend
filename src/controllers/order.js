@@ -4,7 +4,19 @@ const OrderService = require("../services/order");
 class OrderController {
   static async create(req, res) {
     new CreatedResponse({
-      metadata: "CREATE",
+      metadata: await OrderService.create({
+        ...req.body,
+        buyerId: req.account.id,
+      }),
+    }).send(res);
+  }
+
+  static async getOrdersOfBuyerByOrderStatus(req, res) {
+    new OKResponse({
+      metadata: await OrderService.getOrdersOfBuyerByOrderStatus({
+        buyerId: +req.account.id,
+        orderStatusId: +req.query.orderStatusId,
+      }),
     }).send(res);
   }
 

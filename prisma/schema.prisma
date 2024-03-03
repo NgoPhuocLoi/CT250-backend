@@ -140,6 +140,7 @@ model Product {
   material    String
   instruction String
   slug        String         @unique
+  soldNumber  Int            @default(0)
   categoryId  Int?           @map("category_id")
   category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdAt   DateTime       @default(now()) @map("created_at")
