@@ -55,6 +55,11 @@ class ProductService {
             },
           },
         },
+        variants: {
+          select: {
+            quantity: true
+          }
+        }
       },
       take: limit,
     };
