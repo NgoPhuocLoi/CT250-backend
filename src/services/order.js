@@ -261,6 +261,29 @@ class OrderService {
     });
   }
 
+  static async updatePaymentStatus(orderId, vnPayResponseCode) {
+    const foundOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        Payment: true,
+      },
+    });
+
+    const paymentStatusIdToUpdate =
+      vnPayResponseCode === "00"
+        ? PAYMENT_STATUS_ID_MAPPING.SUCCESS
+        : PAYMENT_STATUS_ID_MAPPING.FAILED;
+
+    await prisma.payment.update({
+      where: {
+        orderId: foundOrder.id,
+      },
+      data: {
+        paymentStatusId: paymentStatusIdToUpdate,
+      },
+    });
+  }
+
   static async getAllOrderStatus() {
     return await prisma.orderStatus.findMany();
   }
