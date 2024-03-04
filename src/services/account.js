@@ -7,6 +7,22 @@ class AccountService {
     return accounts;
   }
 
+  static async updateInformation(accountId, updatedData) {
+    if (updatedData.birthday) {
+      updatedData.birthday = new Date(updatedData.birthday).toISOString();
+    }
+    const updatedAccount = await prisma.account.update({
+      where: {
+        id: accountId,
+      },
+      data: updatedData,
+    });
+
+    delete updatedAccount.password;
+
+    return updatedAccount;
+  }
+
   static async getOne(accountId) {
     const account = await prisma.account.findUnique({
       where: {

@@ -11,14 +11,16 @@ datasource db {
 }
 
 model Account {
-  id       Int       @id @default(autoincrement()) @map("account_id")
-  fullName String    @map("full_name")
-  email    String    @unique
+  id       Int            @id @default(autoincrement()) @map("account_id")
+  fullName String         @map("full_name")
+  email    String         @unique
   password String
-  active   Boolean   @default(true)
+  active   Boolean        @default(true)
   phone    String?
   gender   Boolean?
-  birthday DateTime? @db.Date
+  birthday DateTime?      @db.Date
+  avatarId Int?           @unique
+  avatar   UploadedImage? @relation(fields: [avatarId], references: [id])
 
   roleId Int  @default(3) @map("role_id")
   role   Role @relation(fields: [roleId], references: [id])
@@ -60,6 +62,7 @@ model UploadedImage {
 
   color         Color?
   productImages ProductImage[]
+  account       Account?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

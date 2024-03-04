@@ -14,6 +14,23 @@ const uniqueEmail = async (email) => {
   if (foundAccount) throw new BadRequest("This email has already been used!");
 };
 
+const existAccount = async (accountId) => {
+  if (!accountId) return false;
+  const foundAccount = await prisma.account.findUnique({
+    where: {
+      id: +accountId,
+    },
+  });
+
+  if (!foundAccount) throw new BadRequest("Account not found");
+};
+
+const convertDateStringToISODate = async (dateString) => {
+  if (!dateString) return true;
+  const date = new Date(dateString);
+  if (!date) throw new BadRequest("The date should be in format YYYY/MM/DD");
+};
+
 const existCategory = async (categoryId) => {
   if (!categoryId) return true;
   if (!Number.parseInt(categoryId)) throw new BadRequest("Category not found");
@@ -192,4 +209,6 @@ module.exports = {
   existWardOfDistrict,
   existAddressOfAccount,
   existOrderOfAccount,
+  existAccount,
+  convertDateStringToISODate,
 };

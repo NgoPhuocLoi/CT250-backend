@@ -2,7 +2,16 @@ const { OKResponse, CreatedResponse } = require("../response/success");
 const AccountService = require("../services/account");
 
 class AccountController {
-  static async updateInformation(req, res) {}
+  static async updateInformation(req, res) {
+    delete req.body.password;
+    delete req.body.email;
+    new OKResponse({
+      metadata: await AccountService.updateInformation(
+        +req.account.id,
+        req.body
+      ),
+    }).send(res);
+  }
 
   static async getAll(req, res) {
     new CreatedResponse({
