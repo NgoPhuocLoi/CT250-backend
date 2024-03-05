@@ -1,3 +1,4 @@
+const { BadRequest } = require("../response/error");
 const { CreatedResponse, OKResponse } = require("../response/success");
 const CategoryService = require("../services/category");
 
@@ -14,6 +15,12 @@ class CategoryController {
     }).send(res);
   }
 
+  static async getOne(req, res) {
+    new OKResponse({
+      metadata: await CategoryService.getOne(+req.params.categoryId),
+    }).send(res);
+  }
+
   static async update(req, res) {
     new OKResponse({
       metadata: await CategoryService.update(+req.params.id, req.body),
@@ -23,6 +30,23 @@ class CategoryController {
   static async delete(req, res) {
     new OKResponse({
       metadata: await CategoryService.delete(+req.params.id),
+    }).send(res);
+  }
+
+  static async getBreadcumb(req, res) {
+    const subCategoryId = +req.query.fromCategoryId;
+    const productSlug = req.query.fromProductSlug;
+
+    if (!subCategoryId && !productSlug) {
+      throw new BadRequest("Invalid Request");
+    }
+
+    const breadcumb = productSlug
+      ? await CategoryService.getBreadcumbFromProduct(productSlug)
+      : await CategoryService.getBreadcumbFromSubCategory(subCategoryId);
+
+    new OKResponse({
+      metadata: breadcumb,
     }).send(res);
   }
 }

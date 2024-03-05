@@ -8,6 +8,9 @@ const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 const router = require("express").Router();
 
 router.get("", asyncHandler(CategoryController.getAll));
+router.get("/breadcumb", asyncHandler(CategoryController.getBreadcumb));
+
+router.get("/:categoryId", asyncHandler(CategoryController.getOne));
 
 // router.use(authentication);
 

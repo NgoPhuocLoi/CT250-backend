@@ -29,6 +29,25 @@ class CategoryService {
     });
   }
 
+  static async getOne(categoryId) {
+    return await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+  }
+
+  static async update(categoryId, updatedData) {
+    return await prisma.category.update({
+      where: {
+        id: categoryId,
+      },
+      data: updatedData,
+    });
+  }
+
+  static async delete(categoryId) {
+    await prisma.category.delete({ where: { id: categoryId } });
+  }
+
   static async getCategoriesRecursivelyFromParent(parentCategoryId) {
     let result = [parentCategoryId];
     let index = 0;
@@ -48,17 +67,42 @@ class CategoryService {
     return result;
   }
 
-  static async update(categoryId, updatedData) {
-    return await prisma.category.update({
-      where: {
-        id: categoryId,
-      },
-      data: updatedData,
+  static async getBreadcumbFromSubCategory(subCategoryId) {
+    const subCategory = await prisma.category.findUnique({
+      where: { id: subCategoryId },
     });
+
+    const breadcumb = [{ name: subCategory.name, slug: subCategory.slug }];
+
+    let parentCategoryId = subCategory.parentId;
+    while (parentCategoryId) {
+      const parentCategory = await prisma.category.findUnique({
+        where: { id: parentCategoryId },
+      });
+      console.log(parentCategory);
+      breadcumb.unshift({
+        name: parentCategory.name,
+        slug: parentCategory.slug,
+      });
+
+      parentCategoryId = parentCategory.parentId;
+    }
+
+    return breadcumb;
   }
 
-  static async delete(categoryId) {
-    await prisma.category.delete({ where: { id: categoryId } });
+  static async getBreadcumbFromProduct(productSlug) {
+    const foundProduct = await prisma.product.findUnique({
+      where: { slug: productSlug },
+    });
+
+    const breadcumb = await this.getBreadcumbFromSubCategory(
+      foundProduct.categoryId
+    );
+
+    breadcumb.push({ name: foundProduct.name, slug: foundProduct.slug });
+
+    return breadcumb;
   }
 }
 
