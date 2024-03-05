@@ -28,6 +28,9 @@ class AccountService {
       where: {
         id: accountId,
       },
+      include: {
+        avatar: true,
+      },
     });
     return {
       ...account,
