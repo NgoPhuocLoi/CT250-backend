@@ -105,6 +105,24 @@ class OrderService {
     });
   }
 
+  static async getAll(filter) {
+    const orders = await prisma.order.findMany({
+      include: {
+        buyer: true,
+        currentStatus: true,
+        Payment: {
+          include: {
+            paymentStatus: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return orders;
+  }
+
   static async getOrdersOfBuyerByOrderStatus({ buyerId, orderStatusId }) {
     const query = {
       buyerId,

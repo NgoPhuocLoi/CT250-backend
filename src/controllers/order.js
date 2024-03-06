@@ -11,6 +11,12 @@ class OrderController {
     }).send(res);
   }
 
+  static async getAll(req, res) {
+    new OKResponse({
+      metadata: await OrderService.getAll(),
+    }).send(res);
+  }
+
   static async cancel(req, res) {
     new OKResponse({
       metadata: await OrderService.cancel(+req.params.orderId),

@@ -16,6 +16,19 @@ class UploadService {
     });
   }
 
+  static async uploadImages(files) {
+    return await Promise.all(
+      files.map((file) =>
+        prisma.uploadedImage.create({
+          data: {
+            path: file.path,
+            filename: file.filename,
+          },
+        })
+      )
+    );
+  }
+
   static async destroyImage(uploadedImageId) {
     const deletedImage = await prisma.uploadedImage.delete({
       where: {

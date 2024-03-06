@@ -11,6 +11,8 @@ const router = require("express").Router();
 
 router.get("/vnpay_return", PaymentController.handleVNPayReturn);
 
+router.get("/statuses", asyncHandler(PaymentController.getPaymentStatuses));
+
 router.use(authentication);
 
 router.get("/methods", asyncHandler(PaymentController.getPaymentMethods));

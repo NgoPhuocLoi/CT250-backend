@@ -12,6 +12,13 @@ class UploadController {
     }).send(res);
   }
 
+  static async uploadImages(req, res) {
+    new CreatedResponse({
+      message: "Image was uploaded!",
+      metadata: await UploadService.uploadImages(req.files),
+    }).send(res);
+  }
+
   static async destroyImage(req, res) {
     new OKResponse({
       metadata: await UploadService.destroyImage(+req.params.uploadedImageId),

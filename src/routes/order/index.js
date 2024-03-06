@@ -10,6 +10,17 @@ const {
 
 const router = require("express").Router();
 
+router.get("", asyncHandler(OrderController.getAll));
+
+router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
+
+router.get(
+  "/:orderId",
+  param("orderId").custom(existOrderOfAccount),
+  validate,
+  asyncHandler(OrderController.getById)
+);
+
 router.use(authentication);
 
 router.post(
@@ -40,15 +51,6 @@ router.post(
   body("items.*.price").notEmpty().withMessage("Price of item is missing"),
   validate,
   asyncHandler(OrderController.create)
-);
-
-router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
-
-router.get(
-  "/:orderId",
-  param("orderId").custom(existOrderOfAccount),
-  validate,
-  asyncHandler(OrderController.getById)
 );
 
 router.get(

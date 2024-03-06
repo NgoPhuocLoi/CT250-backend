@@ -10,6 +10,12 @@ router.post(
   asyncHandler(UploadController.uploadImage)
 );
 
+router.post(
+  "/images",
+  cloudUploader.array("images"),
+  asyncHandler(UploadController.uploadImages)
+);
+
 router.delete("/:uploadedImageId", asyncHandler(UploadController.destroyImage));
 
 module.exports = router;

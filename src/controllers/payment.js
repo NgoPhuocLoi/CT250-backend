@@ -11,6 +11,12 @@ class PaymentController {
     }).send(res);
   }
 
+  static async getPaymentStatuses(req, res) {
+    new OKResponse({
+      metadata: await PaymentService.getPaymentStatuses(),
+    }).send(res);
+  }
+
   static async createPaymentUrlToVNPay(req, res) {
     const ipAddr =
       req.headers["x-forwarded-for"] ||
