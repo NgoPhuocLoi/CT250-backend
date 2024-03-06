@@ -11,6 +11,15 @@ class OrderController {
     }).send(res);
   }
 
+  static async updateOrderStatus(req, res) {
+    new OKResponse({
+      metadata: await OrderService.updateOrderStatus(
+        +req.params.orderId,
+        req.body
+      ),
+    }).send(res);
+  }
+
   static async getAll(req, res) {
     new OKResponse({
       metadata: await OrderService.getAll(),

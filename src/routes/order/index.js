@@ -6,19 +6,39 @@ const {
   validate,
   existAddressOfAccount,
   existOrderOfAccount,
+  existOrder,
 } = require("../../middlewares/validation");
+const { ORDER_STATUS_ID_MAPPING } = require("../../constant/orderStatus");
 
 const router = require("express").Router();
 
-router.get("", asyncHandler(OrderController.getAll));
+router.get("/all", asyncHandler(OrderController.getAll));
 
 router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
 
-router.get(
-  "/:orderId",
-  param("orderId").custom(existOrderOfAccount),
+// router.get(
+//   "/:orderId",
+//   validate,
+//   asyncHandler(OrderController.getById)
+// ); // VALIDATE ADMIN
+
+router.get("/:orderId", asyncHandler(OrderController.getById));
+
+router.put(
+  "/:orderId/status",
+  param("orderId").custom(existOrder),
+  body("fromStatus")
+    .notEmpty()
+    .withMessage("fromStatus is missing")
+    .isIn(Object.values(ORDER_STATUS_ID_MAPPING))
+    .withMessage("Invalid order status"),
+  body("toStatus")
+    .notEmpty()
+    .withMessage("toStatus is missing")
+    .isIn(Object.values(ORDER_STATUS_ID_MAPPING))
+    .withMessage("Invalid order status"),
   validate,
-  asyncHandler(OrderController.getById)
+  asyncHandler(OrderController.updateOrderStatus)
 );
 
 router.use(authentication);

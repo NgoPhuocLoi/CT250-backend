@@ -185,6 +185,18 @@ const existOrderOfAccount = async (orderId, { req }) => {
   if (!foundOrder) throw new BadRequest("Order not found");
 };
 
+const existOrder = async (orderId) => {
+  if (!orderId) return true;
+
+  const foundOrder = await prisma.order.findUnique({
+    where: {
+      id: +orderId,
+    },
+  });
+
+  if (!foundOrder) throw new BadRequest("Order not found");
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -211,4 +223,5 @@ module.exports = {
   existOrderOfAccount,
   existAccount,
   convertDateStringToISODate,
+  existOrder,
 };

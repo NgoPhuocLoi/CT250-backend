@@ -160,6 +160,25 @@ class OrderService {
     });
   }
 
+  static async updateOrderStatus(orderId, { fromStatus, toStatus }) {
+    if (+fromStatus + 1 != +toStatus) {
+      throw new BadRequest("Invalid request");
+    }
+
+    const foundOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (+fromStatus != foundOrder.currentStatusId) {
+      throw new BadRequest("Invalid request");
+    }
+
+    return await prisma.order.update({
+      where: { id: orderId },
+      data: { currentStatusId: +toStatus },
+    });
+  }
+
   static async getById(orderId) {
     return await prisma.order.findUnique({
       where: {
@@ -191,6 +210,7 @@ class OrderService {
             },
           },
         },
+        buyer: true,
         Payment: {
           include: {
             paymentMethod: true,
