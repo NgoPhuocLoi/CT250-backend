@@ -1,7 +1,11 @@
 const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 const UploadService = require("./upload");
-const { PRODUCT_ALL } = require("../constant/productType");
+const {
+  PRODUCT_ALL,
+  PRODUCT_NEWEST,
+  PRODUCT_TRENDING,
+} = require("../constant/productType");
 const CategoryService = require("./category");
 
 class ProductService {
@@ -37,7 +41,6 @@ class ProductService {
     categoryIds = [],
     productIds = [],
   }) {
-    // await CategoryService.getCategoriesRecursivelyFromParent(2);
     const query = {
       include: {
         images: {
@@ -57,9 +60,9 @@ class ProductService {
         },
         variants: {
           select: {
-            quantity: true
-          }
-        }
+            quantity: true,
+          },
+        },
       },
       take: limit,
     };
@@ -94,9 +97,15 @@ class ProductService {
       query.include.variants = true;
     }
 
-    if (type !== PRODUCT_ALL) {
+    if (type === PRODUCT_NEWEST) {
       query.orderBy = {
         createdAt: "desc",
+      };
+    }
+
+    if (type === PRODUCT_TRENDING) {
+      query.orderBy = {
+        soldNumber: "desc",
       };
     }
     const products = await prisma.product.findMany(query);

@@ -25,8 +25,9 @@ model Account {
   roleId Int  @default(3) @map("role_id")
   role   Role @relation(fields: [roleId], references: [id])
 
-  addresses Address[]
-  orders    Order[]
+  addresses        Address[]
+  orders           Order[]
+  collectedCoupons CollectedCoupons[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -235,6 +236,7 @@ model Order {
   Payment         Payment?
   OrderTracking   OrderTracking[]
   OrderDetail     OrderDetail[]
+  usedCoupons     UsedCoupon[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -267,4 +269,49 @@ model OrderDetail {
 
   @@id([orderId, variantId])
   @@map("order_details")
+}
+
+model Coupon {
+  id                Int      @id @default(autoincrement()) @map("coupon_id")
+  code              String   @unique
+  discountType      String
+  discountValue     Float
+  startDate         DateTime @map("start_date")
+  endDate           DateTime @map("end_date")
+  maxUse            Int
+  currentUse        Int      @default(0) @map("current_use")
+  minimumPriceToUse Float    @map("minumin_price_to_use")
+
+  accountsCollected CollectedCoupons[]
+  ordersUsed        UsedCoupon[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("coupons")
+}
+
+model CollectedCoupons {
+  accountId Int @map("account_id")
+  couponId  Int @map("coupon_id")
+
+  account Account @relation(fields: [accountId], references: [id])
+  coupon  Coupon  @relation(fields: [couponId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([accountId, couponId])
+  @@map("account_coupons")
+}
+
+model UsedCoupon {
+  id       Int @id @default(autoincrement()) @map("used_coupon_id")
+  couponId Int @map("coupon_id")
+  orderId  Int @map("order_id")
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+  order  Order  @relation(fields: [orderId], references: [id])
+
+  @@map("used_coupons")
 }

@@ -79,7 +79,6 @@ class CategoryService {
       const parentCategory = await prisma.category.findUnique({
         where: { id: parentCategoryId },
       });
-      console.log(parentCategory);
       breadcumb.unshift({
         name: parentCategory.name,
         slug: parentCategory.slug,

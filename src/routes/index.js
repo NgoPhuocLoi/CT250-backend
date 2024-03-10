@@ -15,5 +15,6 @@ router.use("/addresses", require("./address"));
 router.use("/shippings", require("./shipping"));
 router.use("/payments", require("./payment"));
 router.use("/orders", require("./order"));
+router.use("/coupons", require("./coupon"));
 
 module.exports = router;
