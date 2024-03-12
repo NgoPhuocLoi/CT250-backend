@@ -197,6 +197,18 @@ const existOrder = async (orderId) => {
   if (!foundOrder) throw new BadRequest("Order not found");
 };
 
+const existCoupon = async (couponId) => {
+  if (!couponId) return true;
+
+  const foundCoupon = await prisma.coupon.findUnique({
+    where: {
+      id: +couponId,
+    },
+  });
+
+  if (!foundCoupon) throw new BadRequest("Coupon not found");
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -224,4 +236,5 @@ module.exports = {
   existAccount,
   convertDateStringToISODate,
   existOrder,
+  existCoupon,
 };

@@ -1,10 +1,13 @@
-const { body } = require("express-validator");
+const { body, param } = require("express-validator");
 const CouponController = require("../../controllers/coupon");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
 const { DISCOUNT_TYPES } = require("../../constant/discountType");
-const { validate } = require("../../middlewares/validation");
+const { validate, existCoupon } = require("../../middlewares/validation");
+const { authentication } = require("../../middlewares/auth");
 
 const router = require("express").Router();
+
+router.use(authentication);
 
 router.post(
   "/",
@@ -35,12 +38,32 @@ router.post(
       }
       return true;
     }),
-  body("maxUse").notEmpty().withMessage("Max use is missing"),
+  body("quantity").notEmpty().withMessage("Coupon quantity is missing"),
   body("minimumPriceToUse")
     .notEmpty()
     .withMessage("Minimum price to use is missing"),
   validate,
   asyncHandler(CouponController.createCoupon)
 );
+
+router.put(
+  "/:couponId",
+  param("couponId").custom(existCoupon),
+  validate,
+  asyncHandler(CouponController.updateCoupon)
+);
+
+router.post(
+  "/collect",
+  body("couponCode").notEmpty().withMessage("Coupon code is missing"),
+  validate,
+  asyncHandler(CouponController.collectCoupon)
+);
+
+router.get("/collected", asyncHandler(CouponController.getCollectedCoupons));
+
+router.get("/", asyncHandler(CouponController.getAllCoupons));
+
+router.get("/valid", asyncHandler(CouponController.getValidCoupons));
 
 module.exports = router;

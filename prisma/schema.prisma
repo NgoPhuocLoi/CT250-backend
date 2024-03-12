@@ -278,7 +278,9 @@ model Coupon {
   discountValue     Float
   startDate         DateTime @map("start_date")
   endDate           DateTime @map("end_date")
-  maxUse            Int
+  quantity          Int
+  visible           Boolean  @default(true)
+  collectedQuantity Int      @default(0) @map("collected_quantity")
   currentUse        Int      @default(0) @map("current_use")
   minimumPriceToUse Float    @map("minumin_price_to_use")
 
