@@ -236,7 +236,8 @@ model Order {
   Payment         Payment?
   OrderTracking   OrderTracking[]
   OrderDetail     OrderDetail[]
-  usedCoupons     UsedCoupon[]
+  usedCouponId    Int?            @map("used_coupon_id")
+  usedCoupon      Coupon?         @relation(fields: [usedCouponId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -285,7 +286,7 @@ model Coupon {
   minimumPriceToUse Float    @map("minumin_price_to_use")
 
   accountsCollected CollectedCoupons[]
-  ordersUsed        UsedCoupon[]
+  ordersUsed        Order[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -294,8 +295,9 @@ model Coupon {
 }
 
 model CollectedCoupons {
-  accountId Int @map("account_id")
-  couponId  Int @map("coupon_id")
+  accountId Int     @map("account_id")
+  couponId  Int     @map("coupon_id")
+  used      Boolean @default(false)
 
   account Account @relation(fields: [accountId], references: [id])
   coupon  Coupon  @relation(fields: [couponId], references: [id])
@@ -305,15 +307,4 @@ model CollectedCoupons {
 
   @@id([accountId, couponId])
   @@map("account_coupons")
-}
-
-model UsedCoupon {
-  id       Int @id @default(autoincrement()) @map("used_coupon_id")
-  couponId Int @map("coupon_id")
-  orderId  Int @map("order_id")
-
-  coupon Coupon @relation(fields: [couponId], references: [id])
-  order  Order  @relation(fields: [orderId], references: [id])
-
-  @@map("used_coupons")
 }
