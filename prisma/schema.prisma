@@ -199,23 +199,26 @@ model OrderStatus {
 }
 
 model Order {
-  id                Int             @id @default(autoincrement()) @map("order_id")
-  totalPrice        Float           @map("total_price")
-  totalDiscount     Float           @map("total_discount")
-  finalPrice        Float           @map("final_price")
-  shippingFee       Float           @map("shipping_fee")
-  buyerId           Int             @map("buyer_id")
-  deliveryAddressId Int             @map("delivery_address_id")
-  currentStatusId   Int             @map("current_status_id")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
-  OrderDetail       OrderDetail[]
-  OrderTracking     OrderTracking[]
-  buyer             Account         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-  currentStatus     OrderStatus     @relation(fields: [currentStatusId], references: [id])
-  deliveryAddress   Address         @relation(fields: [deliveryAddressId], references: [id])
-  Payment           Payment?
-  usedCoupons       UsedCoupon[]
+  id                Int   @id @default(autoincrement()) @map("order_id")
+  totalPrice        Float @map("total_price")
+  totalDiscount     Float @map("total_discount")
+  finalPrice        Float @map("final_price")
+  shippingFee       Float @map("shipping_fee")
+  buyerId           Int   @map("buyer_id")
+  deliveryAddressId Int   @map("delivery_address_id")
+  currentStatusId   Int   @map("current_status_id")
+
+  buyer           Account         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  currentStatus   OrderStatus     @relation(fields: [currentStatusId], references: [id])
+  deliveryAddress Address         @relation(fields: [deliveryAddressId], references: [id])
+  Payment         Payment?
+  OrderTracking   OrderTracking[]
+  OrderDetail     OrderDetail[]
+  usedCouponId    Int?            @map("used_coupon_id")
+  usedCoupon      Coupon?         @relation(fields: [usedCouponId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("orders")
 }
@@ -260,14 +263,22 @@ model Coupon {
   quantity          Int
   visible           Boolean            @default(true)
   accountsCollected CollectedCoupons[]
-  ordersUsed        UsedCoupon[]
+  ordersUsed        Order[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("coupons")
 }
 
 model CollectedCoupons {
-  accountId Int      @map("account_id")
-  couponId  Int      @map("coupon_id")
+  accountId Int     @map("account_id")
+  couponId  Int     @map("coupon_id")
+  used      Boolean @default(false)
+
+  account Account @relation(fields: [accountId], references: [id])
+  coupon  Coupon  @relation(fields: [couponId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   account   Account  @relation(fields: [accountId], references: [id])
@@ -275,14 +286,4 @@ model CollectedCoupons {
 
   @@id([accountId, couponId])
   @@map("account_coupons")
-}
-
-model UsedCoupon {
-  id       Int    @id @default(autoincrement()) @map("used_coupon_id")
-  couponId Int    @map("coupon_id")
-  orderId  Int    @map("order_id")
-  coupon   Coupon @relation(fields: [couponId], references: [id])
-  order    Order  @relation(fields: [orderId], references: [id])
-
-  @@map("used_coupons")
 }
