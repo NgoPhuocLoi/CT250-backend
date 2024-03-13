@@ -26,6 +26,12 @@ class OrderController {
     }).send(res);
   }
 
+  static async getAllPrice(req, res) {
+    new OKResponse({
+      metadata: await OrderService.getAllPrice(),
+    }).send(res);
+  }
+
   static async cancel(req, res) {
     new OKResponse({
       metadata: await OrderService.cancel(+req.params.orderId),

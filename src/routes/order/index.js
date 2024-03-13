@@ -13,6 +13,7 @@ const { ORDER_STATUS_ID_MAPPING } = require("../../constant/orderStatus");
 const router = require("express").Router();
 
 router.get("/all", asyncHandler(OrderController.getAll));
+router.get("/allPrice", asyncHandler(OrderController.getAllPrice));
 
 router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
 

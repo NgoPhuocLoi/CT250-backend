@@ -123,6 +123,19 @@ class OrderService {
     return orders;
   }
 
+  static async getAllPrice() {
+    const orders = await prisma.order.findMany({
+      select: {
+        createdAt: true,
+        finalPrice: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+    return orders;
+  }
+
   static async getOrdersOfBuyerByOrderStatus({ buyerId, orderStatusId }) {
     const query = {
       buyerId,
