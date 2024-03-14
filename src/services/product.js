@@ -5,6 +5,7 @@ const {
   PRODUCT_ALL,
   PRODUCT_NEWEST,
   PRODUCT_TRENDING,
+  PRODUCT_SALES,
 } = require("../constant/productType");
 const CategoryService = require("./category");
 
@@ -116,6 +117,19 @@ class ProductService {
     if (type === PRODUCT_TRENDING) {
       query.orderBy = {
         soldNumber: "desc",
+      };
+    }
+
+    if (type === PRODUCT_SALES) {
+      query.where.productDiscount = {
+        some: {
+          startDate: {
+            lte: new Date().toISOString(),
+          },
+          endDate: {
+            gte: new Date().toISOString(),
+          },
+        },
       };
     }
     const products = await prisma.product.findMany(query);
