@@ -44,6 +44,7 @@ class OrderService {
           variantId: +item.variantId,
           quantity: item.quantity,
           price: item.price,
+          discount: item.productDiscount,
         })),
       });
 
@@ -392,8 +393,8 @@ class OrderService {
       },
       include: {
         product: {
-          select: {
-            price: true,
+          include: {
+            productDiscount: true,
           },
         },
       },
@@ -403,7 +404,21 @@ class OrderService {
       if (variant.quantity < +quantityInOrder[variant.id]) {
         throw new BadRequest("Quantity of some item is invalid");
       }
-      return prev + +quantityInOrder[variant.id] * +variant.product.price;
+      let productDiscount = 0;
+      if (variant.product.productDiscount.length > 0) {
+        const discount = variant.product.productDiscount[0];
+        if (discount.discountType === "percentage") {
+          productDiscount =
+            (variant.product.price * discount.discountValue) / 100;
+        } else {
+          productDiscount = discount.discountValue;
+        }
+      }
+      return (
+        prev +
+        +quantityInOrder[variant.id] *
+          (+variant.product.price - productDiscount)
+      );
     }, 0);
 
     if (reCalculateTotalPrice != totalPrice) {

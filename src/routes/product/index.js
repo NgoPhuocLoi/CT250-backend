@@ -13,6 +13,7 @@ const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 const cloudUploader = require("../../middlewares/cloudUploader");
 const { PRODUCT_QUERY_TYPES } = require("../../constant/productType");
+const { DISCOUNT_TYPES } = require("../../constant/discountType");
 
 const router = require("express").Router();
 
@@ -90,6 +91,35 @@ router.post(
     .custom(existUploadedImage),
   validate,
   asyncHandler(ProductController.addImage)
+);
+
+router.post(
+  "/:id/discount",
+  param("id").custom(existProduct),
+  body("discountType")
+    .notEmpty()
+    .withMessage("Discount type is missing")
+    .isIn(DISCOUNT_TYPES)
+    .withMessage("Invalid discount type"),
+  body("discountValue").notEmpty().withMessage("Discount value is missing"),
+  body("startDate")
+    .notEmpty()
+    .withMessage("Start date is missing")
+    .isDate()
+    .withMessage("Invalid date format"),
+  body("endDate")
+    .notEmpty()
+    .withMessage("End date is missing")
+    .isDate()
+    .withMessage("Invalid date format")
+    .custom((value, { req }) => {
+      if (new Date(req.body.startDate) >= new Date(value)) {
+        throw new Error("End date must be greater than start date");
+      }
+      return true;
+    }),
+  validate,
+  asyncHandler(ProductController.createDiscount)
 );
 
 // router.delete(

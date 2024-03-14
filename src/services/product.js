@@ -5,6 +5,7 @@ const {
   PRODUCT_ALL,
   PRODUCT_NEWEST,
   PRODUCT_TRENDING,
+  PRODUCT_SALES,
 } = require("../constant/productType");
 const CategoryService = require("./category");
 
@@ -63,6 +64,16 @@ class ProductService {
             quantity: true,
           },
         },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
+          },
+        },
       },
       take: limit,
     };
@@ -108,6 +119,19 @@ class ProductService {
         soldNumber: "desc",
       };
     }
+
+    if (type === PRODUCT_SALES) {
+      query.where.productDiscount = {
+        some: {
+          startDate: {
+            lte: new Date().toISOString(),
+          },
+          endDate: {
+            gte: new Date().toISOString(),
+          },
+        },
+      };
+    }
     const products = await prisma.product.findMany(query);
 
     return products;
@@ -134,6 +158,16 @@ class ProductService {
           colors: {
             include: {
               thumbnailImage: true,
+            },
+          },
+          productDiscount: {
+            where: {
+              startDate: {
+                lte: new Date().toISOString(),
+              },
+              endDate: {
+                gte: new Date().toISOString(),
+              },
             },
           },
         },
@@ -176,6 +210,16 @@ class ProductService {
         colors: {
           include: {
             thumbnailImage: true,
+          },
+        },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
           },
         },
       },

@@ -93,7 +93,7 @@ class PaymentController {
       );
       // res.render("success", { code: vnp_Params["vnp_ResponseCode"] });
       res.redirect(
-        `http://localhost:3000/tai-khoan/quan-ly-don-hang/${orderId}?code=${vnp_Params["vnp_ResponseCode"]}`
+        `${process.env.FRONTEND_URL}/tai-khoan/quan-ly-don-hang/${orderId}?code=${vnp_Params["vnp_ResponseCode"]}`
       );
     } else {
       res.json({ code: "97" });

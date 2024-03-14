@@ -1,5 +1,6 @@
 const { CreatedResponse, OKResponse } = require("../response/success");
 const ProductService = require("../services/product");
+const ProductDiscountService = require("../services/productDiscount");
 
 class ProductController {
   static async create(req, res) {
@@ -56,6 +57,16 @@ class ProductController {
         req.filename
       ),
       // metadata: {},
+    }).send(res);
+  }
+
+  static async createDiscount(req, res) {
+    new CreatedResponse({
+      message: "Product discount created",
+      metadata: await ProductDiscountService.create({
+        ...req.body,
+        productId: +req.params.id,
+      }),
     }).send(res);
   }
 }

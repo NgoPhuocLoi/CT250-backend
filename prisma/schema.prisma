@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,23 +11,26 @@ datasource db {
 }
 
 model Account {
-  id               Int                @id @default(autoincrement()) @map("account_id")
-  fullName         String             @map("full_name")
-  email            String             @unique
-  password         String
-  active           Boolean            @default(true)
-  phone            String?
-  gender           Boolean?
-  birthday         DateTime?          @db.Date
-  roleId           Int                @default(3) @map("role_id")
-  createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
-  avatarId         Int?               @unique
-  collectedCoupons CollectedCoupons[]
-  avatar           UploadedImage?     @relation(fields: [avatarId], references: [id])
-  role             Role               @relation(fields: [roleId], references: [id])
+  id       Int            @id @default(autoincrement()) @map("account_id")
+  fullName String         @map("full_name")
+  email    String         @unique
+  password String
+  active   Boolean        @default(true)
+  phone    String?
+  gender   Boolean?
+  birthday DateTime?      @db.Date
+  avatarId Int?           @unique
+  avatar   UploadedImage? @relation(fields: [avatarId], references: [id])
+
+  roleId Int  @default(3) @map("role_id")
+  role   Role @relation(fields: [roleId], references: [id])
+
   addresses        Address[]
   orders           Order[]
+  collectedCoupons CollectedCoupons[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("accounts")
 }
@@ -41,23 +47,26 @@ model Address {
   contactPhone  String  @map("contact_phone")
   detailAddress String  @map("detail_address")
   isDefault     Boolean @default(false) @map("is_default")
-  accountId     Int     @map("account_id")
   isDeleted     Boolean @default(false) @map("is_deleted")
-  account       Account @relation(fields: [accountId], references: [id])
-  orders        Order[]
+
+  accountId Int     @map("account_id")
+  account   Account @relation(fields: [accountId], references: [id])
+  orders    Order[]
 
   @@map("addresses")
 }
 
 model UploadedImage {
-  id            Int            @id @default(autoincrement()) @map("image_id")
-  path          String
-  filename      String         @unique
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  account       Account?
+  id       Int    @id @default(autoincrement()) @map("image_id")
+  path     String
+  filename String @unique
+
   color         Color?
   productImages ProductImage[]
+  account       Account?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("uploaded_images")
 }
@@ -75,25 +84,29 @@ model Category {
   name      String
   slug      String
   parentId  Int?       @map("parent_id")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
   parent    Category?  @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
   children  Category[] @relation("categoryRelation")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
   products  Product[]
 
   @@map("categories")
 }
 
 model Color {
-  id               Int           @id @default(autoincrement()) @map("color_id")
-  name             String
-  productId        Int           @map("product_id")
-  productImageId   Int           @unique @map("product_image_id")
+  id   Int    @id @default(autoincrement()) @map("color_id")
+  name String
+
   thumbnailImageId Int           @unique @map("thumbnail_image_id")
-  product          Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productImage     ProductImage  @relation(fields: [productImageId], references: [id], onDelete: Cascade)
   thumbnailImage   UploadedImage @relation(fields: [thumbnailImageId], references: [id], onDelete: Cascade)
-  variant          Variant[]
+
+  productId Int     @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  productImageId Int          @unique @map("product_image_id")
+  productImage   ProductImage @relation(fields: [productImageId], references: [id], onDelete: Cascade)
+
+  variant Variant[]
 
   @@map("colors")
 }
@@ -108,92 +121,102 @@ model Size {
 }
 
 model ProductImage {
-  imageId   Int           @map("image_id")
-  productId Int           @map("product_id")
-  id        Int           @id @default(autoincrement()) @map("product_image_id")
-  color     Color?
-  image     UploadedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        Int @id @default(autoincrement()) @map("product_image_id")
+  imageId   Int @map("image_id")
+  productId Int @map("product_id")
+
+  image   UploadedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  color Color?
 
   @@unique([imageId, productId])
   @@map("product_images")
 }
 
 model Product {
-  id          Int            @id @default(autoincrement()) @map("product_id")
-  name        String
-  price       Float
-  visible     Boolean        @default(true)
-  description String
-  overview    String
-  material    String
-  instruction String
-  slug        String         @unique
-  categoryId  Int?           @map("category_id")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  soldNumber  Int            @default(0)
-  colors      Color[]
-  images      ProductImage[]
-  category    Category?      @relation(fields: [categoryId], references: [id])
-  variants    Variant[]
+  id              Int               @id @default(autoincrement()) @map("product_id")
+  name            String
+  price           Float
+  visible         Boolean           @default(true)
+  description     String
+  overview        String
+  material        String
+  instruction     String
+  slug            String            @unique
+  soldNumber      Int               @default(0)
+  categoryId      Int?              @map("category_id")
+  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  variants        Variant[]
+  images          ProductImage[]
+  colors          Color[]
+  productDiscount ProductDiscount[]
 
   @@map("products")
 }
 
 model Variant {
-  quantity    Int
-  colorId     Int           @map("color_id")
-  sizeId      Int           @map("size_id")
-  productId   Int           @map("product_id")
+  id        Int @id @default(autoincrement()) @map("variant_id")
+  quantity  Int
+  colorId   Int @map("color_id")
+  sizeId    Int @map("size_id")
+  productId Int @map("product_id")
+
+  color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  size    Size    @relation(fields: [sizeId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-  id          Int           @id @default(autoincrement()) @map("variant_id")
   OrderDetail OrderDetail[]
-  color       Color         @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  product     Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size        Size          @relation(fields: [sizeId], references: [id], onDelete: Cascade)
 
   @@unique([productId, colorId, sizeId])
   @@map("variants")
 }
 
 model PaymentMethod {
-  id       Int       @id @default(autoincrement()) @map("payment_method_id")
-  name     String
+  id   Int    @id @default(autoincrement()) @map("payment_method_id")
+  name String
+
   payments Payment[]
 
   @@map("payment_methods")
 }
 
 model PaymentStatus {
-  id       Int       @id @default(autoincrement()) @map("payment_status_id")
-  name     String
+  id   Int    @id @default(autoincrement()) @map("payment_status_id")
+  name String
+
   payments Payment[]
 
   @@map("payment_statuses")
 }
 
 model Payment {
-  id              Int           @id @default(autoincrement()) @map("payment_id")
+  id              Int   @id @default(autoincrement()) @map("payment_id")
   amount          Float
-  paymentMethodId Int           @map("payment_method_id")
-  orderId         Int           @unique @map("order_id")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
   paymentStatusId Int
-  order           Order         @relation(fields: [orderId], references: [id])
-  paymentStatus   PaymentStatus @relation(fields: [paymentStatusId], references: [id])
-  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  paymentMethodId Int   @map("payment_method_id")
+  orderId         Int   @unique @map("order_id")
+
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  paymentStatus PaymentStatus @relation(fields: [paymentStatusId], references: [id])
+  order         Order         @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("payments")
 }
 
 model OrderStatus {
-  id            Int             @id @default(autoincrement()) @map("order_status_id")
-  name          String
-  OrderTracking OrderTracking[]
+  id   Int    @id @default(autoincrement()) @map("order_status_id")
+  name String
+
   orders        Order[]
+  OrderTracking OrderTracking[]
 
   @@map("order_statuses")
 }
@@ -224,44 +247,46 @@ model Order {
 }
 
 model OrderTracking {
-  id            Int         @id @default(autoincrement()) @map("order_tracking_id")
-  orderId       Int         @map("order_id")
-  orderStatusId Int         @map("order_status_id")
-  beginAt       DateTime    @default(now()) @map("begin_at")
-  finishAt      DateTime?   @map("finish_at")
-  order         Order       @relation(fields: [orderId], references: [id])
-  orderStatus   OrderStatus @relation(fields: [orderStatusId], references: [id])
+  id            Int       @id @default(autoincrement()) @map("order_tracking_id")
+  orderId       Int       @map("order_id")
+  orderStatusId Int       @map("order_status_id")
+  beginAt       DateTime  @default(now()) @map("begin_at")
+  finishAt      DateTime? @map("finish_at")
+
+  order       Order       @relation(fields: [orderId], references: [id])
+  orderStatus OrderStatus @relation(fields: [orderStatusId], references: [id])
 
   @@unique([orderId, orderStatusId])
   @@map("order_trackings")
 }
 
 model OrderDetail {
-  orderId   Int     @map("order_id")
-  variantId Int     @map("variant_id")
+  orderId   Int   @map("order_id")
+  variantId Int   @map("variant_id")
   quantity  Int
   price     Float
-  order     Order   @relation(fields: [orderId], references: [id])
-  variant   Variant @relation(fields: [variantId], references: [id])
+  discount  Float @default(0)
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  variant Variant @relation(fields: [variantId], references: [id])
 
   @@id([orderId, variantId])
   @@map("order_details")
 }
 
 model Coupon {
-  id                Int                @id @default(autoincrement()) @map("coupon_id")
-  code              String             @unique
+  id                Int      @id @default(autoincrement()) @map("coupon_id")
+  code              String   @unique
   discountType      String
   discountValue     Float
-  startDate         DateTime           @map("start_date")
-  endDate           DateTime           @map("end_date")
-  currentUse        Int                @default(0) @map("current_use")
-  minimumPriceToUse Float              @map("minumin_price_to_use")
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
-  collectedQuantity Int                @default(0) @map("collected_quantity")
+  startDate         DateTime @map("start_date")
+  endDate           DateTime @map("end_date")
   quantity          Int
-  visible           Boolean            @default(true)
+  visible           Boolean  @default(true)
+  collectedQuantity Int      @default(0) @map("collected_quantity")
+  currentUse        Int      @default(0) @map("current_use")
+  minimumPriceToUse Float    @map("minumin_price_to_use")
+
   accountsCollected CollectedCoupons[]
   ordersUsed        Order[]
 
@@ -281,9 +306,20 @@ model CollectedCoupons {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  account   Account  @relation(fields: [accountId], references: [id])
-  coupon    Coupon   @relation(fields: [couponId], references: [id])
 
   @@id([accountId, couponId])
   @@map("account_coupons")
+}
+
+model ProductDiscount {
+  id            Int      @id @default(autoincrement()) @map("product_discount_id")
+  productId     Int      @map("product_id")
+  discountType  String   @map("discount_type")
+  discountValue Float    @map("discount_value")
+  startDate     DateTime @map("start_date")
+  endDate       DateTime @map("end_date")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("product_discounts")
 }
