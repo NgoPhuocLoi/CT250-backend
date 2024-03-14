@@ -9,7 +9,7 @@ const {
   convertDateStringToISODate,
 } = require("../../middlewares/validation");
 
-router.use(authentication);
+// router.use(authentication);
 
 router.get("/", asyncHandler(AccountController.getAll));
 router.get("/:id", asyncHandler(AccountController.getOne));

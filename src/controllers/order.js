@@ -26,9 +26,9 @@ class OrderController {
     }).send(res);
   }
 
-  static async getAllPrice(req, res) {
+  static async getAllForReport(req, res) {
     new OKResponse({
-      metadata: await OrderService.getAllPrice(),
+      metadata: await OrderService.getAllForReport(),
     }).send(res);
   }
 

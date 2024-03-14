@@ -151,11 +151,16 @@ class OrderService {
     return orders;
   }
 
-  static async getAllPrice() {
+  static async getAllForReport() {
     const orders = await prisma.order.findMany({
       select: {
         createdAt: true,
         finalPrice: true,
+        OrderDetail: {
+          select: {
+            quantity: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "asc",
@@ -276,7 +281,7 @@ class OrderService {
 
     if (
       foundedOrder.currentStatusId !=
-        ORDER_STATUS_ID_MAPPING.AWAITING_CONFIRM &&
+      ORDER_STATUS_ID_MAPPING.AWAITING_CONFIRM &&
       foundedOrder != ORDER_STATUS_ID_MAPPING.AWAITING_FULFILLMENT
     ) {
       throw new BadRequest("You can not cancel the delivering order");
