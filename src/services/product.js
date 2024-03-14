@@ -63,6 +63,16 @@ class ProductService {
             quantity: true,
           },
         },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
+          },
+        },
       },
       take: limit,
     };
@@ -136,6 +146,16 @@ class ProductService {
               thumbnailImage: true,
             },
           },
+          productDiscount: {
+            where: {
+              startDate: {
+                lte: new Date().toISOString(),
+              },
+              endDate: {
+                gte: new Date().toISOString(),
+              },
+            },
+          },
         },
       }),
       prisma.variant.findMany({
@@ -176,6 +196,16 @@ class ProductService {
         colors: {
           include: {
             thumbnailImage: true,
+          },
+        },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
           },
         },
       },

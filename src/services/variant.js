@@ -32,7 +32,20 @@ class VariantService {
           },
         },
         size: true,
-        product: true,
+        product: {
+          include: {
+            productDiscount: {
+              where: {
+                startDate: {
+                  lte: new Date().toISOString(),
+                },
+                endDate: {
+                  gte: new Date().toISOString(),
+                },
+              },
+            },
+          },
+        },
       },
     });
   }

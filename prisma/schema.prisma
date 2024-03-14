@@ -135,23 +135,24 @@ model ProductImage {
 }
 
 model Product {
-  id          Int            @id @default(autoincrement()) @map("product_id")
-  name        String
-  price       Float
-  visible     Boolean        @default(true)
-  description String
-  overview    String
-  material    String
-  instruction String
-  slug        String         @unique
-  soldNumber  Int            @default(0)
-  categoryId  Int?           @map("category_id")
-  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  variants    Variant[]
-  images      ProductImage[]
-  colors      Color[]
+  id              Int               @id @default(autoincrement()) @map("product_id")
+  name            String
+  price           Float
+  visible         Boolean           @default(true)
+  description     String
+  overview        String
+  material        String
+  instruction     String
+  slug            String            @unique
+  soldNumber      Int               @default(0)
+  categoryId      Int?              @map("category_id")
+  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  variants        Variant[]
+  images          ProductImage[]
+  colors          Color[]
+  productDiscount ProductDiscount[]
 
   @@map("products")
 }
@@ -264,6 +265,7 @@ model OrderDetail {
   variantId Int   @map("variant_id")
   quantity  Int
   price     Float
+  discount  Float @default(0)
 
   order   Order   @relation(fields: [orderId], references: [id])
   variant Variant @relation(fields: [variantId], references: [id])
@@ -307,4 +309,17 @@ model CollectedCoupons {
 
   @@id([accountId, couponId])
   @@map("account_coupons")
+}
+
+model ProductDiscount {
+  id            Int      @id @default(autoincrement()) @map("product_discount_id")
+  productId     Int      @map("product_id")
+  discountType  String   @map("discount_type")
+  discountValue Float    @map("discount_value")
+  startDate     DateTime @map("start_date")
+  endDate       DateTime @map("end_date")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("product_discounts")
 }
