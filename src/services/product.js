@@ -154,7 +154,29 @@ class ProductService {
               },
             },
           },
-          variants: true,
+          variants: {
+            include: {
+              color: {
+                include: {
+                  productImage: {
+                    include: {
+                      image: {
+                        select: {
+                          path: true
+                        }
+                      }
+                    }
+                  },
+                  thumbnailImage: {
+                    select: {
+                      path: true
+                    }
+                  }
+                }
+              },
+              size: true,
+            }
+          },
           colors: {
             include: {
               thumbnailImage: true,
