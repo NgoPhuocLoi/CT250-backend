@@ -11,6 +11,7 @@ router.get("", asyncHandler(CategoryController.getAll));
 router.get("/breadcumb", asyncHandler(CategoryController.getBreadcumb));
 
 router.get("/:categoryId", asyncHandler(CategoryController.getOne));
+router.get("/parent/:categoryId", asyncHandler(CategoryController.getRootParent));
 
 // router.use(authentication);
 

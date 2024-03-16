@@ -32,7 +32,44 @@ class CategoryService {
   static async getOne(categoryId) {
     return await prisma.category.findUnique({
       where: { id: categoryId },
+      include: {
+        children: {
+          include: {
+            children: true
+          },
+        }
+      }
     });
+  }
+
+  static async getRootParent(categoryId) {
+    let result = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+      include: {
+        children: {
+          include: {
+            children: true
+          },
+        }
+      }
+    });
+    while (result.parentId) {
+      result = await prisma.category.findUnique({
+        where: {
+          id: result.parentId,
+        },
+        include: {
+          children: {
+            include: {
+              children: true
+            },
+          }
+        }
+      });
+    }
+    return result;
   }
 
   static async update(categoryId, updatedData) {

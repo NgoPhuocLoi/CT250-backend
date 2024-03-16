@@ -20,6 +20,13 @@ class CategoryController {
       metadata: await CategoryService.getOne(+req.params.categoryId),
     }).send(res);
   }
+  
+  static async getRootParent(req, res) {
+    new OKResponse({
+      metadata: await CategoryService.getRootParent(+req.params.categoryId),
+    }).send(res);
+  }
+  
 
   static async update(req, res) {
     new OKResponse({
