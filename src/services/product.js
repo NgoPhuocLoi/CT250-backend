@@ -121,6 +121,7 @@ class ProductService {
     }
 
     if (type === PRODUCT_SALES) {
+      if (!query.where) Object.assign(query, { where: {} });
       query.where.productDiscount = {
         some: {
           startDate: {

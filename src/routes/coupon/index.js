@@ -66,4 +66,6 @@ router.get("/", asyncHandler(CouponController.getAllCoupons));
 
 router.get("/valid", asyncHandler(CouponController.getValidCoupons));
 
+router.get("/:code", asyncHandler(CouponController.getByCode));
+
 module.exports = router;

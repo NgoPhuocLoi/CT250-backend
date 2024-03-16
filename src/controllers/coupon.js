@@ -16,6 +16,13 @@ class CouponController {
     }).send(res);
   }
 
+  static async getByCode(req, res) {
+    new OKResponse({
+      message: "Coupon retrieved successfully",
+      metadata: await CouponService.getByCode(req.params.code),
+    }).send(res);
+  }
+
   static async getCollectedCoupons(req, res) {
     new OKResponse({
       message: "Collected coupons retrieved successfully",

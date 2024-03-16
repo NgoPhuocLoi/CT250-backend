@@ -26,7 +26,17 @@ class CouponService {
     return newCoupon;
   }
 
+  static async getByCode(code) {
+    return await prisma.coupon.findUnique({
+      where: {
+        code,
+      },
+    });
+  }
+
   static async update(couponId, data) {
+    if (data.startDate) data.startDate = new Date(data.startDate).toISOString();
+    if (data.endDate) data.endDate = new Date(data.endDate).toISOString();
     return await prisma.coupon.update({
       where: {
         id: couponId,
