@@ -72,6 +72,43 @@ class CategoryService {
     return result;
   }
 
+  static async getChildren(categoryId) {
+    let category = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+      include: {
+        children: {
+          include: {
+            children: true
+          },
+        }
+      }
+    });
+    while (category.parentId) {
+      category = await prisma.category.findUnique({
+        where: {
+          id: category.parentId,
+        },
+        include: {
+          children: {
+            include: {
+              children: true
+            },
+          }
+        }
+      });
+    }
+    let res = [categoryId];
+    category.children.forEach((child) => {
+      res.push(child.id);
+      child.children?.forEach((child2) => {
+        res.push(child2.id);
+      });
+    });
+    return res;
+  }
+
   static async update(categoryId, updatedData) {
     return await prisma.category.update({
       where: {

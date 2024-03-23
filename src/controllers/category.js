@@ -20,13 +20,19 @@ class CategoryController {
       metadata: await CategoryService.getOne(+req.params.categoryId),
     }).send(res);
   }
-  
+
   static async getRootParent(req, res) {
     new OKResponse({
       metadata: await CategoryService.getRootParent(+req.params.categoryId),
     }).send(res);
   }
-  
+
+  static async getChildren(req, res) {
+    new OKResponse({
+      // metadata: await CategoryService.getCategoriesRecursivelyFromParent(+req.params.categoryId),
+      metadata: await CategoryService.getChildren(+req.params.categoryId),
+    }).send(res);
+  }
 
   static async update(req, res) {
     new OKResponse({

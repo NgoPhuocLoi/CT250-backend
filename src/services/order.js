@@ -1,7 +1,7 @@
 const prisma = require("../config/prismaClient");
 const { ORDER_STATUS_ID_MAPPING } = require("../constant/orderStatus");
 const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
-const { BadRequest } = require("../response/error");
+const CategoryService = require("./category");
 
 class OrderService {
   static async create({
@@ -165,6 +165,120 @@ class OrderService {
       },
       orderBy: {
         createdAt: "asc",
+      },
+    });
+    return orders;
+  }
+
+  static async getMenForReport() {
+    let menCategory = await prisma.category.findFirst({
+      where: {
+        name: "Nam",
+      },
+    });
+    const childrenCategories = await CategoryService.getChildren(menCategory.id);
+    const orders = await prisma.orderDetail.findMany({
+      where: {
+        variant: {
+          product: {
+            categoryId: {
+              in: childrenCategories
+            }
+          },
+        },
+      },
+      select: {
+        quantity: true,
+        order: {
+          select: {
+            createdAt: true,
+          }
+        },
+        variant: {
+          select: {
+            product: {
+              select: {
+                price: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return orders;
+  }
+
+  static async getWomenForReport() {
+    let womenCategory = await prisma.category.findFirst({
+      where: {
+        name: "Nữ",
+      },
+    });
+    const childrenCategories = await CategoryService.getChildren(womenCategory.id);
+    const orders = await prisma.orderDetail.findMany({
+      where: {
+        variant: {
+          product: {
+            categoryId: {
+              in: childrenCategories
+            }
+          },
+        },
+      },
+      select: {
+        quantity: true,
+        order: {
+          select: {
+            createdAt: true,
+          }
+        },
+        variant: {
+          select: {
+            product: {
+              select: {
+                price: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return orders;
+  }
+
+  static async getChildrenForReport() {
+    let childrenCategory = await prisma.category.findFirst({
+      where: {
+        name: "Trẻ em",
+      },
+    });
+    const childrenCategories = await CategoryService.getChildren(childrenCategory.id);
+    const orders = await prisma.orderDetail.findMany({
+      where: {
+        variant: {
+          product: {
+            categoryId: {
+              in: childrenCategories
+            }
+          },
+        },
+      },
+      select: {
+        quantity: true,
+        order: {
+          select: {
+            createdAt: true,
+          }
+        },
+        variant: {
+          select: {
+            product: {
+              select: {
+                price: true,
+              },
+            },
+          },
+        },
       },
     });
     return orders;
@@ -417,7 +531,7 @@ class OrderService {
       return (
         prev +
         +quantityInOrder[variant.id] *
-          (+variant.product.price - productDiscount)
+        (+variant.product.price - productDiscount)
       );
     }, 0);
 
