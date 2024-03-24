@@ -1,6 +1,9 @@
+const prisma = require("../config/prismaClient");
 const { CreatedResponse, OKResponse } = require("../response/success");
 const ProductService = require("../services/product");
 const ProductDiscountService = require("../services/productDiscount");
+const pgVector = require("../config/pgVector");
+const { generateEmbeddingsFrom } = require("../utils/generateEmbeddings");
 
 class ProductController {
   static async create(req, res) {
@@ -67,6 +70,40 @@ class ProductController {
         ...req.body,
         productId: +req.params.id,
       }),
+    }).send(res);
+  }
+
+  static async search(req, res) {
+    const query = req.query.q;
+    const searchQuery = query.split(" ").join(" & ");
+    const regex = /(nam|nữ|trẻ em)/i;
+    const gender = query.match(regex)[0];
+    console.log(gender);
+    console.log(searchQuery);
+    const results = await prisma.product.findMany({
+      where: {
+        name: {
+          search: searchQuery,
+        },
+      },
+    });
+    new OKResponse({
+      metadata: results,
+    }).send(res);
+  }
+
+  static async semanticSearch(req, res) {
+    const query = req.query.q;
+
+    const embeddings = await generateEmbeddingsFrom(query);
+    console.log(embeddings);
+    const result = await pgVector.query(
+      "SELECT 1 - (embedding <=> $1) AS cosine_similarity, name FROM items ORDER BY cosine_similarity DESC;",
+      [JSON.stringify(embeddings)]
+    );
+
+    new OKResponse({
+      metadata: result.rows,
     }).send(res);
   }
 }
