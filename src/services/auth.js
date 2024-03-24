@@ -46,8 +46,7 @@ class AuthService {
     return generateToken(account);
   }
 
-  static async loginWithGoogle({ email, fullName, phone }) { // photoURL
-
+  static async loginWithGoogle({ email, fullName, phone, avatarId }) { 
     let account = await prisma.account.findUnique({
       where: { email },
       include: {
@@ -67,6 +66,7 @@ class AuthService {
           phone,
           gender: true,
           birthday: null,
+          avatarId,
         },
       });
       account = await prisma.account.findUnique({
