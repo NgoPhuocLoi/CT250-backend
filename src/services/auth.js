@@ -2,8 +2,7 @@ const prisma = require("../config/prismaClient");
 const bcrypt = require("bcrypt");
 const { BadRequest } = require("../response/error");
 const { generatePairTokens } = require("../utils/generateToken");
-const { getRole } = require("../constant/roles");
-
+const { ADMIN, EMPLOYEE, getRole } = require("../constant/roles");
 class AuthService {
   static async register({
     fullName,
@@ -46,9 +45,14 @@ class AuthService {
     return generateToken(account);
   }
 
-  static async loginWithGoogle({ email, fullName, phone, avatarId }) { 
-    let account = await prisma.account.findUnique({
-      where: { email },
+  static async adminLogin({ email, password }) {
+    const account = await prisma.account.findUnique({
+      where: {
+        email,
+        roleId: {
+          in: [1, 2]
+        }
+      },
       include: {
         role: {
           select: { role: true },
@@ -56,28 +60,31 @@ class AuthService {
       },
     });
 
-    // create account
-    if (!account) {
-      const newAccount = await prisma.account.create({
-        data: {
-          fullName,
-          email,
-          password: "",
-          phone,
-          gender: true,
-          birthday: null,
-          avatarId,
+    if (!account) throw new BadRequest("Invalid credentials");
+
+    const matchedPassword = await bcrypt.compare(password, account.password);
+
+    if (!matchedPassword) throw new BadRequest("Invalid credentials");
+
+    return generateToken(account);
+  }
+
+  static async adminLoginWithGoogle({ email, fullName, phone, avatarId }) {
+    let account = await prisma.account.findUnique({
+      where: {
+        email,
+        roleId: {
+          in: [1, 2]
+        }
+      },
+      include: {
+        role: {
+          select: { role: true },
         },
-      });
-      account = await prisma.account.findUnique({
-        where: { email: newAccount.email },
-        include: {
-          role: {
-            select: { role: true },
-          },
-        },
-      });
-    }
+      },
+    });
+
+    if (!account) throw new BadRequest("Invalid credentials");
     return generateToken(account);
   }
 }
