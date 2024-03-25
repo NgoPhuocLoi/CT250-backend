@@ -2,12 +2,14 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
 }
 
 model Account {
@@ -153,6 +155,8 @@ model Product {
   images          ProductImage[]
   colors          Color[]
   productDiscount ProductDiscount[]
+
+  productEmbedding ProductEmbeddings?
 
   @@map("products")
 }
@@ -322,4 +326,14 @@ model ProductDiscount {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("product_discounts")
+}
+
+model ProductEmbeddings {
+  id        Int                   @id @default(autoincrement()) @map("product_embedding_id")
+  productId Int                   @unique @map("product_id")
+  embedding Unsupported("vector")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("product_embeddings")
 }

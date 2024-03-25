@@ -1,6 +1,9 @@
+const prisma = require("../config/prismaClient");
 const { CreatedResponse, OKResponse } = require("../response/success");
 const ProductService = require("../services/product");
 const ProductDiscountService = require("../services/productDiscount");
+const pgVector = require("../config/pgVector");
+const { generateEmbeddingsFrom } = require("../utils/generateEmbeddings");
 
 class ProductController {
   static async create(req, res) {
@@ -67,6 +70,34 @@ class ProductController {
         ...req.body,
         productId: +req.params.id,
       }),
+    }).send(res);
+  }
+
+  static async search(req, res) {
+    const query = req.query.q;
+    const searchQuery = query.split(" ").join(" & ");
+    const genderRegex = /(nam|nữ|trẻ em)/i;
+    // const gender = query.match(regex)[0];
+    // console.log(gender);
+    console.log(searchQuery);
+    const results = await prisma.product.findMany({
+      where: {
+        name: {
+          search: searchQuery,
+        },
+      },
+    });
+    new OKResponse({
+      metadata: results,
+    }).send(res);
+  }
+
+  static async semanticSearch(req, res) {
+    const query = req.query.q;
+    console.log(query);
+
+    new OKResponse({
+      metadata: await ProductService.semanticSeach(query),
     }).send(res);
   }
 }

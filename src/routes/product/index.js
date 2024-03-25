@@ -32,6 +32,9 @@ router.get(
   asyncHandler(ProductController.getAll)
 );
 
+router.get("/search", asyncHandler(ProductController.search));
+router.get("/semantic-search", asyncHandler(ProductController.semanticSearch));
+
 router.get(
   "/:id",
   param("id").custom(existProduct),
