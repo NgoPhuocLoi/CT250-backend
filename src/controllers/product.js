@@ -76,9 +76,9 @@ class ProductController {
   static async search(req, res) {
     const query = req.query.q;
     const searchQuery = query.split(" ").join(" & ");
-    const regex = /(nam|nữ|trẻ em)/i;
-    const gender = query.match(regex)[0];
-    console.log(gender);
+    const genderRegex = /(nam|nữ|trẻ em)/i;
+    // const gender = query.match(regex)[0];
+    // console.log(gender);
     console.log(searchQuery);
     const results = await prisma.product.findMany({
       where: {
@@ -94,16 +94,10 @@ class ProductController {
 
   static async semanticSearch(req, res) {
     const query = req.query.q;
-
-    const embeddings = await generateEmbeddingsFrom(query);
-    console.log(embeddings);
-    const result = await pgVector.query(
-      "SELECT 1 - (embedding <=> $1) AS cosine_similarity, name FROM items ORDER BY cosine_similarity DESC;",
-      [JSON.stringify(embeddings)]
-    );
+    console.log(query);
 
     new OKResponse({
-      metadata: result.rows,
+      metadata: await ProductService.semanticSeach(query),
     }).send(res);
   }
 }

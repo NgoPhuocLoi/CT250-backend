@@ -8,6 +8,9 @@ const {
   PRODUCT_SALES,
 } = require("../constant/productType");
 const CategoryService = require("./category");
+const { generateEmbeddingsFrom } = require("../utils/generateEmbeddings");
+const { getGenderFromQuery } = require("../utils");
+const { Prisma } = require("@prisma/client");
 
 class ProductService {
   static async create({ uploadedImageIds, ...data }) {
@@ -163,20 +166,20 @@ class ProductService {
                     include: {
                       image: {
                         select: {
-                          path: true
-                        }
-                      }
-                    }
+                          path: true,
+                        },
+                      },
+                    },
                   },
                   thumbnailImage: {
                     select: {
-                      path: true
-                    }
-                  }
-                }
+                      path: true,
+                    },
+                  },
+                },
               },
               size: true,
-            }
+            },
           },
           colors: {
             include: {
@@ -307,6 +310,73 @@ class ProductService {
       }),
       UploadService.destroyImage(productImageId),
     ]);
+  }
+
+  static async semanticSeach(query) {
+    const embeddings = await generateEmbeddingsFrom(query.toLowerCase());
+    const genderObject = await getGenderFromQuery(query);
+
+    let result;
+
+    if (genderObject) {
+      const categoriesRecursivelyFromParent = Array.from(
+        new Set(
+          await CategoryService.getCategoriesRecursivelyFromParent(
+            genderObject.id
+          )
+        )
+      );
+      console.log(categoriesRecursivelyFromParent);
+      result =
+        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, products.product_id FROM product_embeddings JOIN products ON product_embeddings.product_id = products.product_id  WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.76 AND products.category_id IN (${Prisma.join(
+          categoriesRecursivelyFromParent
+        )}) ORDER BY cosine_similarity DESC LIMIT 10;`;
+
+      console.log(result);
+    } else {
+      result =
+        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.7 ORDER BY cosine_similarity DESC LIMIT 10;`;
+    }
+
+    return await prisma.product.findMany({
+      where: {
+        id: {
+          in: result.map((item) => item.product_id),
+        },
+      },
+      include: {
+        images: {
+          include: {
+            image: true,
+          },
+        },
+        colors: {
+          include: {
+            thumbnailImage: true,
+            productImage: {
+              include: {
+                image: true,
+              },
+            },
+          },
+        },
+        variants: {
+          select: {
+            quantity: true,
+          },
+        },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
+          },
+        },
+      },
+    });
   }
 }
 

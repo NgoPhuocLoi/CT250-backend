@@ -14,6 +14,26 @@ function sortObject(obj) {
   return sorted;
 }
 
+async function getGenderFromQuery(query) {
+  const prisma = require("../config/prismaClient");
+
+  const genderRegex = /(nam|nữ|trẻ em)/i;
+  const gender = query.toLowerCase().match(genderRegex)?.at(0);
+  if (gender) {
+    const genderCategories = await prisma.category.findMany({
+      where: {
+        parentId: null,
+      },
+    });
+
+    return genderCategories.find(
+      (category) => category.name.toLowerCase() === gender
+    );
+  }
+  return null;
+}
+
 module.exports = {
   sortObject,
+  getGenderFromQuery,
 };
