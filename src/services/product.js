@@ -447,6 +447,108 @@ class ProductService {
       include: includeOption,
     });
   }
+
+  static async getRecommendProductsBasedOnOrders(accountId) {
+    const orders = await prisma.order.findMany({
+      where: {
+        buyerId: accountId,
+      },
+      include: {
+        OrderDetail: {
+          include: {
+            variant: {
+              select: {
+                productId: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (orders.length === 0)
+      return await ProductService.getAll({ limit: 10, type: PRODUCT_NEWEST });
+
+    const productIds = new Set();
+
+    orders.forEach((order) => {
+      order.OrderDetail.forEach((orderDetail) => {
+        if (productIds.size > 10) return;
+        productIds.add(orderDetail.variant.productId);
+      });
+    });
+
+    let limit = Math.floor(10 / productIds.size);
+
+    const productEmbeddings =
+      await prisma.$queryRaw`SELECT embedding::text, product_id FROM product_embeddings WHERE product_id IN (${Prisma.join(
+        Array.from(productIds)
+      )}) ORDER BY product_id ASC;`;
+
+    const recommendProductIds = [];
+    const excludedProductIds = Array.from(productIds);
+    for (let productEmbeddingIndex in productEmbeddings) {
+      if (productEmbeddingIndex == productEmbeddings.length - 1) {
+        limit = 10 - recommendProductIds.length;
+      }
+      const productEmbedding = productEmbeddings[productEmbeddingIndex];
+      let result = await prisma.$queryRaw`SELECT 1 - (embedding <=> ${
+        productEmbedding.embedding
+      }::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE product_id NOT IN (${Prisma.join(
+        excludedProductIds
+      )}) ORDER BY cosine_similarity DESC LIMIT ${limit};`;
+
+      for (let item of result) {
+        recommendProductIds.push(item.product_id);
+        excludedProductIds.push(item.product_id);
+      }
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: recommendProductIds,
+        },
+      },
+      include: {
+        images: {
+          include: {
+            image: true,
+          },
+        },
+        colors: {
+          include: {
+            thumbnailImage: true,
+            productImage: {
+              include: {
+                image: true,
+              },
+            },
+          },
+        },
+        variants: {
+          select: {
+            quantity: true,
+          },
+        },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
+          },
+        },
+      },
+    });
+
+    return products;
+  }
 }
 
 module.exports = ProductService;

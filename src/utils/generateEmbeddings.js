@@ -10,10 +10,12 @@ async function generateEmbeddingsFrom(text) {
       },
       body: JSON.stringify({ sentences: [text] }),
     });
+    console.log(res);
     const data = await res.json();
 
     return data.embeddings[0];
   } catch (error) {
+    console.log(error);
     throw new BadRequest("The API is not available. Please try again later.");
   }
 }

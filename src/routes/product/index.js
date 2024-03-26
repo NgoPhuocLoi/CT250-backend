@@ -33,7 +33,11 @@ router.get(
 );
 
 router.get("/search", asyncHandler(ProductController.search));
-router.get("/semantic-search", asyncHandler(ProductController.semanticSearch));
+router.get(
+  "/recommend",
+  authentication,
+  asyncHandler(ProductController.getRecommendedProducts)
+);
 
 router.get(
   "/:id",
@@ -49,7 +53,7 @@ router.get(
   asyncHandler(ProductController.getOneBySlug)
 );
 
-// router.use(authentication);
+router.use(authentication);
 
 router.post(
   "",

@@ -81,12 +81,13 @@ class ProductController {
     }).send(res);
   }
 
-  static async semanticSearch(req, res) {
-    const query = req.query.q;
-    console.log(query);
+  static async getRecommendedProducts(req, res) {
+    const accountId = +req.account.id;
 
     new OKResponse({
-      metadata: await ProductService.semanticSeach(query),
+      metadata: await ProductService.getRecommendProductsBasedOnOrders(
+        accountId
+      ),
     }).send(res);
   }
 }
