@@ -312,30 +312,130 @@ class ProductService {
     ]);
   }
 
-  static async semanticSeach(query) {
-    const embeddings = await generateEmbeddingsFrom(query.toLowerCase());
-    const genderObject = await getGenderFromQuery(query);
+  static async search(query) {
+    const trimmedQuery = query.trim().replace(/ {2,}/g, " ").toLowerCase();
 
-    let result;
+    const genderObject = await getGenderFromQuery(trimmedQuery);
+
+    let categoriesRecursivelyFromParent = [];
 
     if (genderObject) {
-      const categoriesRecursivelyFromParent = Array.from(
+      categoriesRecursivelyFromParent = Array.from(
         new Set(
           await CategoryService.getCategoriesRecursivelyFromParent(
             genderObject.id
           )
         )
       );
-      console.log(categoriesRecursivelyFromParent);
+    }
+
+    const fullTextSearchStringQueryWithoutGender = trimmedQuery
+      .replace(/nam|nữ|trẻ em/g, "")
+      .trim()
+      .replace(/ {2,}/g, " ")
+      .replace(/ /g, " & ");
+
+    const includeOptionsInProduct = {
+      images: {
+        include: {
+          image: true,
+        },
+      },
+      colors: {
+        include: {
+          thumbnailImage: true,
+          productImage: {
+            include: {
+              image: true,
+            },
+          },
+        },
+      },
+      variants: {
+        select: {
+          quantity: true,
+        },
+      },
+      productDiscount: {
+        where: {
+          startDate: {
+            lte: new Date().toISOString(),
+          },
+          endDate: {
+            gte: new Date().toISOString(),
+          },
+        },
+      },
+    };
+
+    const fullTextSearchResult = await ProductService.fullTextSearch(
+      fullTextSearchStringQueryWithoutGender,
+      categoriesRecursivelyFromParent,
+      includeOptionsInProduct
+    );
+
+    const semanticSearchResult = await ProductService.semanticSeach(
+      trimmedQuery,
+      fullTextSearchResult,
+      categoriesRecursivelyFromParent,
+      includeOptionsInProduct
+    );
+
+    return {
+      fullTextSearchResult,
+      semanticSearchResult,
+    };
+  }
+
+  static async fullTextSearch(
+    query,
+    categoriesRecursivelyFromParent = [],
+    includeOption
+  ) {
+    const searchQuery = {
+      where: {
+        name: {
+          search: query,
+        },
+      },
+      include: includeOption,
+    };
+    if (categoriesRecursivelyFromParent.length > 0) {
+      searchQuery.where.categoryId = {
+        in: categoriesRecursivelyFromParent,
+      };
+    }
+    return await prisma.product.findMany(searchQuery);
+  }
+
+  static async semanticSeach(
+    query,
+    fullTextSearchResult = [],
+    categoriesRecursivelyFromParent = [],
+    includeOption
+  ) {
+    const embeddings = await generateEmbeddingsFrom(query.toLowerCase());
+    const fullTextSearchResultIds = fullTextSearchResult.map((item) => item.id);
+
+    if (fullTextSearchResultIds.length === 0) {
+      fullTextSearchResultIds.push(-1);
+    }
+    let result;
+
+    if (categoriesRecursivelyFromParent.length > 0) {
       result =
-        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, products.product_id FROM product_embeddings JOIN products ON product_embeddings.product_id = products.product_id  WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.76 AND products.category_id IN (${Prisma.join(
+        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, products.product_id FROM product_embeddings JOIN products ON product_embeddings.product_id = products.product_id  WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.65 AND products.category_id IN (${Prisma.join(
           categoriesRecursivelyFromParent
+        )}) AND products.product_id NOT IN (${Prisma.join(
+          fullTextSearchResultIds
         )}) ORDER BY cosine_similarity DESC LIMIT 10;`;
 
       console.log(result);
     } else {
       result =
-        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.7 ORDER BY cosine_similarity DESC LIMIT 10;`;
+        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.6 AND product_id NOT IN (${Prisma.join(
+          fullTextSearchResultIds
+        )}) ORDER BY cosine_similarity DESC LIMIT 10;`;
     }
 
     return await prisma.product.findMany({
@@ -344,38 +444,7 @@ class ProductService {
           in: result.map((item) => item.product_id),
         },
       },
-      include: {
-        images: {
-          include: {
-            image: true,
-          },
-        },
-        colors: {
-          include: {
-            thumbnailImage: true,
-            productImage: {
-              include: {
-                image: true,
-              },
-            },
-          },
-        },
-        variants: {
-          select: {
-            quantity: true,
-          },
-        },
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
-      },
+      include: includeOption,
     });
   }
 }
