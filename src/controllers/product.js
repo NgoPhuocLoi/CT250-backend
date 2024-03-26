@@ -75,20 +75,9 @@ class ProductController {
 
   static async search(req, res) {
     const query = req.query.q;
-    const searchQuery = query.split(" ").join(" & ");
-    const genderRegex = /(nam|nữ|trẻ em)/i;
-    // const gender = query.match(regex)[0];
-    // console.log(gender);
-    console.log(searchQuery);
-    const results = await prisma.product.findMany({
-      where: {
-        name: {
-          search: searchQuery,
-        },
-      },
-    });
+
     new OKResponse({
-      metadata: results,
+      metadata: await ProductService.search(query),
     }).send(res);
   }
 
