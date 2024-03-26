@@ -6,6 +6,19 @@ const { asyncHandler } = require("../../middlewares/asyncHandler");
 const { authentication } = require("../../middlewares/auth");
 
 router.post(
+  "/login",
+  body("email", "Invalid email!").isEmail(),
+  body("password").notEmpty().trim().withMessage("Password is missing!"),
+  validate,
+  asyncHandler(AuthController.login)
+);
+
+router.post(
+  "/loginWithGoogle",
+  asyncHandler(AuthController.loginWithGoogle)
+);
+
+router.post(
   "/adminLogin",
   body("email", "Invalid email!").isEmail(),
   body("password").notEmpty().trim().withMessage("Password is missing!"),

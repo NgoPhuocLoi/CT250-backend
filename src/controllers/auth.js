@@ -3,6 +3,20 @@ const AccountService = require("../services/account");
 const AuthService = require("../services/auth");
 
 class AuthController {
+  static async login(req, res) {
+    new OKResponse({
+      message: "Login successfully",
+      metadata: await AuthService.login(req.body),
+    }).send(res);
+  }
+
+  static async loginWithGoogle(req, res) {
+    new OKResponse({
+      message: "Login with google successfully",
+      metadata: await AuthService.loginWithGoogle(req.body),
+    }).send(res);
+  }
+
   static async adminLogin(req, res) {
     new OKResponse({
       message: "Login successfully",

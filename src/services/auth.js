@@ -45,6 +45,41 @@ class AuthService {
     return generateToken(account);
   }
 
+  static async loginWithGoogle({ email, fullName, phone, avatarId }) {
+    let account = await prisma.account.findUnique({
+      where: { email },
+      include: {
+        role: {
+          select: { role: true },
+        },
+      },
+    });
+
+    // create account
+    if (!account) {
+      const newAccount = await prisma.account.create({
+        data: {
+          fullName,
+          email,
+          password: "",
+          phone,
+          gender: true,
+          birthday: null,
+          avatarId,
+        },
+      });
+      account = await prisma.account.findUnique({
+        where: { email: newAccount.email },
+        include: {
+          role: {
+            select: { role: true },
+          },
+        },
+      });
+    }
+    return generateToken(account);
+  }
+
   static async adminLogin({ email, password }) {
     const account = await prisma.account.findUnique({
       where: {
@@ -69,7 +104,7 @@ class AuthService {
     return generateToken(account);
   }
 
-  static async adminLoginWithGoogle({ email, fullName, phone, avatarId }) {
+  static async adminLoginWithGoogle({ email }) {
     let account = await prisma.account.findUnique({
       where: {
         email,
