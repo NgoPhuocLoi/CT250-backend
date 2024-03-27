@@ -2,8 +2,6 @@ const prisma = require("../config/prismaClient");
 const { CreatedResponse, OKResponse } = require("../response/success");
 const ProductService = require("../services/product");
 const ProductDiscountService = require("../services/productDiscount");
-const pgVector = require("../config/pgVector");
-const { generateEmbeddingsFrom } = require("../utils/generateEmbeddings");
 
 class ProductController {
   static async create(req, res) {
@@ -13,12 +11,14 @@ class ProductController {
   }
 
   static async getAll(req, res) {
+    const page = +req.query.page || 1;
     new OKResponse({
       metadata: await ProductService.getAll({
         type: req.query.type,
         categoryIds: req.query.categoryIds,
         limit: +req.query.limit,
         productIds: req.query.productIds,
+        page,
       }),
     }).send(res);
   }

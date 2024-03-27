@@ -11,6 +11,7 @@ const CategoryService = require("./category");
 const { generateEmbeddingsFrom } = require("../utils/generateEmbeddings");
 const { getGenderFromQuery } = require("../utils");
 const { Prisma } = require("@prisma/client");
+const { getQueryObjectBasedOnFilters } = require("../utils/product");
 
 class ProductService {
   static async create({ uploadedImageIds, ...data }) {
@@ -44,8 +45,9 @@ class ProductService {
     limit = 6,
     categoryIds = [],
     productIds = [],
+    page = 1,
   }) {
-    const query = {
+    let query = {
       include: {
         images: {
           include: {
@@ -81,64 +83,28 @@ class ProductService {
       take: limit,
     };
 
-    if (categoryIds.length > 0) {
-      const res = await Promise.all(
-        categoryIds.map((categoryId) =>
-          CategoryService.getCategoriesRecursivelyFromParent(+categoryId)
-        )
-      );
-      const recursiveCategoryIds = Array.from(new Set(res.flat()));
-      query.where = {
-        categoryId: {
-          in: recursiveCategoryIds,
-        },
-      };
-    }
+    query = await getQueryObjectBasedOnFilters(query, {
+      categoryIds,
+      productIds,
+      type,
+    });
 
-    if (productIds.length > 0) {
-      if (query.where) {
-        query.where.id = {
-          in: productIds.map((id) => +id),
-        };
-      } else {
-        query.where = {
-          id: {
-            in: productIds.map((id) => +id),
-          },
-        };
-      }
+    const count = await prisma.product.count({
+      where: query.where,
+    });
 
-      query.include.variants = true;
-    }
+    const offset = page > 1 ? (page - 1) * limit : 0;
+    const totalPages = Math.ceil(count / limit);
 
-    if (type === PRODUCT_NEWEST) {
-      query.orderBy = {
-        createdAt: "desc",
-      };
-    }
-
-    if (type === PRODUCT_TRENDING) {
-      query.orderBy = {
-        soldNumber: "desc",
-      };
-    }
-
-    if (type === PRODUCT_SALES) {
-      if (!query.where) Object.assign(query, { where: {} });
-      query.where.productDiscount = {
-        some: {
-          startDate: {
-            lte: new Date().toISOString(),
-          },
-          endDate: {
-            gte: new Date().toISOString(),
-          },
-        },
-      };
-    }
-    const products = await prisma.product.findMany(query);
-
-    return products;
+    const products = await prisma.product.findMany({ ...query, skip: offset });
+    query;
+    return {
+      products,
+      pagination: {
+        totalProducts: count,
+        totalPages,
+      },
+    };
   }
 
   static async getOne(productId) {
