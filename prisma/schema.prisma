@@ -66,6 +66,7 @@ model UploadedImage {
   color         Color?
   productImages ProductImage[]
   account       Account?
+  embedding     ProductImageEmbeddings?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -137,24 +138,25 @@ model ProductImage {
 }
 
 model Product {
-  id              Int               @id @default(autoincrement()) @map("product_id")
-  name            String
-  price           Float
-  visible         Boolean           @default(true)
-  description     String
-  overview        String
-  material        String
-  instruction     String
-  slug            String            @unique
-  soldNumber      Int               @default(0)
-  categoryId      Int?              @map("category_id")
-  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  variants        Variant[]
-  images          ProductImage[]
-  colors          Color[]
-  productDiscount ProductDiscount[]
+  id                     Int                      @id @default(autoincrement()) @map("product_id")
+  name                   String
+  price                  Float
+  visible                Boolean                  @default(true)
+  description            String
+  overview               String
+  material               String
+  instruction            String
+  slug                   String                   @unique
+  soldNumber             Int                      @default(0)
+  categoryId             Int?                     @map("category_id")
+  category               Category?                @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
+  variants               Variant[]
+  images                 ProductImage[]
+  colors                 Color[]
+  productDiscount        ProductDiscount[]
+  productImageEmbeddings ProductImageEmbeddings[]
 
   productEmbedding ProductEmbeddings?
 
@@ -336,4 +338,17 @@ model ProductEmbeddings {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("product_embeddings")
+}
+
+model ProductImageEmbeddings {
+  id Int @id @default(autoincrement()) @map("product_image_embedding_id")
+
+  productId Int                   @map("product_id")
+  imageId   Int                   @unique @map("image_id")
+  embedding Unsupported("vector")
+
+  product Product       @relation(fields: [productId], references: [id])
+  image   UploadedImage @relation(fields: [imageId], references: [id])
+
+  @@map("product_image_embeddings")
 }

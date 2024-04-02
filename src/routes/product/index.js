@@ -34,6 +34,13 @@ router.get(
 
 router.get("/search", asyncHandler(ProductController.search));
 router.get(
+  "/search/image",
+  query("imageUrl").notEmpty().withMessage("Image's url is missing"),
+  validate,
+  asyncHandler(ProductController.searchByImageUrl)
+);
+
+router.get(
   "/recommend",
   authentication,
   asyncHandler(ProductController.getRecommendedProducts)

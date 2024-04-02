@@ -9,12 +9,46 @@ const {
 } = require("../constant/productType");
 const CategoryService = require("./category");
 const {
-  generateEmbeddingsFrom,
-  generateEmbeddingsFromV2,
+  generateEmbeddingsFromText,
+  generateEmbeddingsFromTextV2,
+  generateEmbeddingsFromImageUrl,
 } = require("../utils/generateEmbeddings");
 const { getGenderFromQuery } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters } = require("../utils/product");
+
+const commonIncludeOptionsInProduct = {
+  images: {
+    include: {
+      image: true,
+    },
+  },
+  colors: {
+    include: {
+      thumbnailImage: true,
+      productImage: {
+        include: {
+          image: true,
+        },
+      },
+    },
+  },
+  variants: {
+    select: {
+      quantity: true,
+    },
+  },
+  productDiscount: {
+    where: {
+      startDate: {
+        lte: new Date().toISOString(),
+      },
+      endDate: {
+        gte: new Date().toISOString(),
+      },
+    },
+  },
+};
 
 class ProductService {
   static async create({ uploadedImageIds, ...data }) {
@@ -304,50 +338,15 @@ class ProductService {
       .replace(/ {2,}/g, " ")
       .replace(/ /g, " & ");
 
-    const includeOptionsInProduct = {
-      images: {
-        include: {
-          image: true,
-        },
-      },
-      colors: {
-        include: {
-          thumbnailImage: true,
-          productImage: {
-            include: {
-              image: true,
-            },
-          },
-        },
-      },
-      variants: {
-        select: {
-          quantity: true,
-        },
-      },
-      productDiscount: {
-        where: {
-          startDate: {
-            lte: new Date().toISOString(),
-          },
-          endDate: {
-            gte: new Date().toISOString(),
-          },
-        },
-      },
-    };
-
     const fullTextSearchResult = await ProductService.fullTextSearch(
       fullTextSearchStringQueryWithoutGender,
-      categoriesRecursivelyFromParent,
-      includeOptionsInProduct
+      categoriesRecursivelyFromParent
     );
 
     const semanticSearchResult = await ProductService.semanticSeach(
       trimmedQuery,
       fullTextSearchResult,
-      categoriesRecursivelyFromParent,
-      includeOptionsInProduct
+      categoriesRecursivelyFromParent
     );
 
     return {
@@ -356,18 +355,14 @@ class ProductService {
     };
   }
 
-  static async fullTextSearch(
-    query,
-    categoriesRecursivelyFromParent = [],
-    includeOption
-  ) {
+  static async fullTextSearch(query, categoriesRecursivelyFromParent = []) {
     const searchQuery = {
       where: {
         name: {
           search: query,
         },
       },
-      include: includeOption,
+      include: commonIncludeOptionsInProduct,
     };
     if (categoriesRecursivelyFromParent.length > 0) {
       searchQuery.where.categoryId = {
@@ -380,10 +375,9 @@ class ProductService {
   static async semanticSeach(
     query,
     fullTextSearchResult = [],
-    categoriesRecursivelyFromParent = [],
-    includeOption
+    categoriesRecursivelyFromParent = []
   ) {
-    const embeddings = await generateEmbeddingsFromV2(query.toLowerCase());
+    const embeddings = await generateEmbeddingsFromTextV2(query.toLowerCase());
 
     const fullTextSearchResultIds = fullTextSearchResult.map((item) => item.id);
     if (fullTextSearchResultIds.length === 0) {
@@ -411,7 +405,7 @@ class ProductService {
           in: result.map((item) => item.product_id),
         },
       },
-      include: includeOption,
+      include: commonIncludeOptionsInProduct,
     });
   }
 
@@ -513,6 +507,42 @@ class ProductService {
         },
       },
     });
+
+    return products;
+  }
+
+  static async imageSearch(imageUrl) {
+    const embeddings = await generateEmbeddingsFromImageUrl(imageUrl);
+    const foundResults = [];
+    const exclusiveProductIds = [-1];
+    let result;
+    do {
+      result =
+        await prisma.$queryRaw`SELECT product_id, 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, image_id FROM product_image_embeddings WHERE product_id NOT IN (${Prisma.join(
+          exclusiveProductIds
+        )}) ORDER BY cosine_similarity DESC LIMIT 1`;
+
+      if (result.length > 0) {
+        foundResults.push(result[0]);
+        exclusiveProductIds.push(result[0].product_id);
+      }
+    } while (
+      result.length > 0 &&
+      result[0].cosine_similarity > 0.6 &&
+      foundResults.length < 10
+    );
+
+    const products = [];
+
+    for (let foundResult of foundResults) {
+      const product = await prisma.product.findUnique({
+        where: {
+          id: foundResult.product_id,
+        },
+        include: commonIncludeOptionsInProduct,
+      });
+      products.push({ ...product, similarImageId: foundResult.image_id });
+    }
 
     return products;
   }

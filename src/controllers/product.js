@@ -90,6 +90,14 @@ class ProductController {
       ),
     }).send(res);
   }
+
+  static async searchByImageUrl(req, res) {
+    const imageUrl = req.query.imageUrl;
+
+    new OKResponse({
+      metadata: await ProductService.imageSearch(imageUrl),
+    }).send(res);
+  }
 }
 
 module.exports = ProductController;
