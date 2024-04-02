@@ -85,8 +85,8 @@ class AuthService {
       where: {
         email,
         roleId: {
-          in: [1, 2]
-        }
+          in: [1, 2],
+        },
       },
       include: {
         role: {
@@ -109,8 +109,8 @@ class AuthService {
       where: {
         email,
         roleId: {
-          in: [1, 2]
-        }
+          in: [1, 2],
+        },
       },
       include: {
         role: {

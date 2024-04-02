@@ -10,7 +10,6 @@ async function generateEmbeddingsFrom(text) {
       },
       body: JSON.stringify({ sentences: [text] }),
     });
-    console.log(res);
     const data = await res.json();
 
     return data.embeddings[0];
@@ -20,6 +19,28 @@ async function generateEmbeddingsFrom(text) {
   }
 }
 
+async function generateEmbeddingsFromV2(text) {
+  try {
+    const res = await fetch(
+      `${process.env.EMBEDDING_SERVICE_URL}/api/embeddings/text`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      }
+    );
+    const data = await res.json();
+
+    return data.embeddings;
+  } catch (error) {
+    console.log(error);
+    throw new BadRequest("The API is not available. Please try again later.");
+  }
+}
+
 module.exports = {
   generateEmbeddingsFrom,
+  generateEmbeddingsFromV2,
 };

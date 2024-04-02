@@ -8,7 +8,10 @@ const {
   PRODUCT_SALES,
 } = require("../constant/productType");
 const CategoryService = require("./category");
-const { generateEmbeddingsFrom } = require("../utils/generateEmbeddings");
+const {
+  generateEmbeddingsFrom,
+  generateEmbeddingsFromV2,
+} = require("../utils/generateEmbeddings");
 const { getGenderFromQuery } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters } = require("../utils/product");
@@ -380,26 +383,24 @@ class ProductService {
     categoriesRecursivelyFromParent = [],
     includeOption
   ) {
-    const embeddings = await generateEmbeddingsFrom(query.toLowerCase());
-    const fullTextSearchResultIds = fullTextSearchResult.map((item) => item.id);
+    const embeddings = await generateEmbeddingsFromV2(query.toLowerCase());
 
+    const fullTextSearchResultIds = fullTextSearchResult.map((item) => item.id);
     if (fullTextSearchResultIds.length === 0) {
       fullTextSearchResultIds.push(-1);
     }
     let result;
-
+    let threadhold = fullTextSearchResult.length > 0 ? 0.3 : 0.6;
     if (categoriesRecursivelyFromParent.length > 0) {
       result =
-        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, products.product_id FROM product_embeddings JOIN products ON product_embeddings.product_id = products.product_id  WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.65 AND products.category_id IN (${Prisma.join(
+        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, products.product_id FROM product_embeddings JOIN products ON product_embeddings.product_id = products.product_id  WHERE 1 - (embedding <=> ${embeddings}::vector) >= ${threadhold} AND products.category_id IN (${Prisma.join(
           categoriesRecursivelyFromParent
         )}) AND products.product_id NOT IN (${Prisma.join(
           fullTextSearchResultIds
         )}) ORDER BY cosine_similarity DESC LIMIT 10;`;
-
-      console.log(result);
     } else {
       result =
-        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE 1 - (embedding <=> ${embeddings}::vector) >= 0.6 AND product_id NOT IN (${Prisma.join(
+        await prisma.$queryRaw`SELECT 1 - (embedding <=> ${embeddings}::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE 1 - (embedding <=> ${embeddings}::vector) >= ${threadhold} AND product_id NOT IN (${Prisma.join(
           fullTextSearchResultIds
         )}) ORDER BY cosine_similarity DESC LIMIT 10;`;
     }
