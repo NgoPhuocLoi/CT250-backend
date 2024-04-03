@@ -1,6 +1,7 @@
 const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 const UploadService = require("./upload");
+const { readFileSync, rm } = require("fs");
 const {
   PRODUCT_ALL,
   PRODUCT_NEWEST,
@@ -511,8 +512,10 @@ class ProductService {
     return products;
   }
 
-  static async imageSearch(imageUrl) {
-    const embeddings = await generateEmbeddingsFromImageUrl(imageUrl);
+  static async imageSearch(imageUrl, uploadedImagePath) {
+    const embeddings = Array.from(
+      await generateEmbeddingsFromImageUrl(imageUrl)
+    );
     const foundResults = [];
     const exclusiveProductIds = [-1];
     let result;
@@ -542,6 +545,14 @@ class ProductService {
         include: commonIncludeOptionsInProduct,
       });
       products.push({ ...product, similarImageId: foundResult.image_id });
+    }
+
+    if (uploadedImagePath) {
+      rm(uploadedImagePath, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
     }
 
     return products;

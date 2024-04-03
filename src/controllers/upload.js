@@ -19,9 +19,23 @@ class UploadController {
     }).send(res);
   }
 
+  static async uploadImageToDisk(req, res) {
+    new CreatedResponse({
+      message: "Image was uploaded!",
+      metadata: { path: req.file.path, filename: req.file.filename },
+    }).send(res);
+  }
+
   static async destroyImage(req, res) {
     new OKResponse({
       metadata: await UploadService.destroyImage(+req.params.uploadedImageId),
+    }).send(res);
+  }
+
+  static destroyImageInDisk(req, res) {
+    UploadService.destroyImageInDisk(req.params.uploadedImageFileName);
+    new OKResponse({
+      message: "Image was deleted!",
     }).send(res);
   }
 }

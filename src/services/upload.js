@@ -37,6 +37,11 @@ class UploadService {
     });
     return await cloudinary.uploader.destroy(deletedImage.filename);
   }
+
+  static destroyImageInDisk(uploadedImageFileName) {
+    const fs = require("fs");
+    fs.rmSync("uploads/" + uploadedImageFileName);
+  }
 }
 
 module.exports = UploadService;
