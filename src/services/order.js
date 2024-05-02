@@ -2,6 +2,7 @@ const prisma = require("../config/prismaClient");
 const { ORDER_STATUS_ID_MAPPING } = require("../constant/orderStatus");
 const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
 const CategoryService = require("./category");
+const { BadRequest } = require("../response/error");
 
 class OrderService {
   static async create({

@@ -3,7 +3,11 @@ const { BadRequest } = require("../response/error");
 
 class AccountService {
   static async getAll() {
-    const accounts = await prisma.account.findMany();
+    const accounts = await prisma.account.findMany({
+      include: {
+        avatar: true,
+      },
+    });
     return accounts;
   }
 
